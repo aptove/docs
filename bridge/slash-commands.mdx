@@ -1,0 +1,73 @@
+---
+title: "Slash Commands"
+description: "Define custom slash commands that appear in the Aptove app's command picker."
+---
+
+## Overview
+
+Slash commands let users trigger predefined actions in the mobile app by typing `/` in the chat input. Many agents (like Claude Code and Codex) send an `available_commands_update` ACP message automatically. For agents that don't — like Copilot CLI or Goose — you can define commands in `common.toml` and the bridge will inject them after every session start.
+
+## Defining commands
+
+Add one `[[slash_commands]]` block per command in `common.toml`:
+
+```toml
+[[slash_commands]]
+name = "fix"
+description = "Fix the selected code"
+
+[[slash_commands]]
+name = "explain"
+description = "Explain the code"
+input_hint = "what to focus on"
+
+[[slash_commands]]
+name = "test"
+description = "Write unit tests for the selected code"
+```
+
+## Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Command name without the `/` prefix. Shown as `/fix` in the app. |
+| `description` | Yes | Short description shown below the command name in the picker. |
+| `input_hint` | No | If provided, the command accepts a free-text argument. This string is shown as the placeholder in the input field. |
+
+## How it works
+
+When the bridge starts a new session (or loads an existing one), it sends an `available_commands_update` ACP message to the connected app:
+
+```json
+{
+  "type": "available_commands_update",
+  "commands": [
+    { "name": "fix", "description": "Fix the selected code" },
+    { "name": "explain", "description": "Explain the code", "inputHint": "what to focus on" }
+  ]
+}
+```
+
+The app displays a command picker when the user types `/`. Selecting a command with `input_hint` opens an additional text field before sending.
+
+<Note>
+If the agent itself sends `available_commands_update`, those commands take precedence and the `common.toml` list is not injected — the bridge only injects when the agent doesn't send the notification itself.
+</Note>
+
+## Example: Copilot CLI
+
+Copilot CLI does not advertise its commands over ACP. Add these to your `common.toml`:
+
+```toml
+[[slash_commands]]
+name = "explain"
+description = "Explain the selected code"
+
+[[slash_commands]]
+name = "fix"
+description = "Fix the selected code"
+
+[[slash_commands]]
+name = "doc"
+description = "Generate documentation"
+```

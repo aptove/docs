@@ -1,0 +1,57 @@
+---
+title: "Features"
+description: "A guide to the Aptove app's chat, voice, slash commands, and notification features."
+---
+
+## Chat
+
+The chat view is the main interface for talking to an agent. Messages are sent over the WebSocket connection to the bridge, which pipes them to the agent process and streams the response back.
+
+- **Streaming responses** — agent output appears word-by-word as it arrives
+- **Markdown rendering** — responses are rendered with syntax highlighting for code blocks
+- **Message history** — conversation history is stored locally on the device
+- **Session continuity** — the bridge preserves the agent session between connections; you can close the app and resume later
+
+## Voice input
+
+Tap the microphone button in the chat input to dictate a message. The app uses the device's built-in speech recognition — no internet service or subscription required.
+
+- Works offline on supported devices (iOS 16+ on-device recognition)
+- Tap again or tap **Send** to confirm the transcription before sending
+
+## Slash commands
+
+Type `/` in the chat input to open the command picker. Commands are provided by the agent (via `available_commands_update`) or defined manually in the bridge's `common.toml`.
+
+| Command type | Behavior |
+|---|---|
+| Simple command | Sends `/command` immediately |
+| Command with input | Opens an additional text field; sends `/command <your text>` |
+
+## Push notifications
+
+When the Aptove app is in the background and the agent produces new output, the bridge sends a push notification through the push relay. Tapping the notification opens the relevant agent's chat directly.
+
+- Notifications are debounced: at most one notification per 30 seconds per agent to avoid flooding
+- Notification content is fixed ("Your agent has new activity") — agent response text is never sent through the push relay for privacy
+- Push requires the bridge to have a `[push_relay]` section configured in `common.toml`
+
+## Agent list
+
+The home screen shows all paired agents with their connection status:
+
+| Status | Meaning |
+|--------|---------|
+| Connected | WebSocket open, agent ready |
+| Connecting | Reconnect attempt in progress |
+| Disconnected | Could not reach the bridge |
+
+Tap an agent to open the chat. Long-press for options: **Edit**, **Reconnect**, **Remove**.
+
+## Settings
+
+Access settings from the gear icon on the home screen:
+
+- **Notifications** — enable or disable push notifications per agent
+- **Appearance** — light / dark / system theme
+- **Agent configuration** — edit the name and icon for any paired agent

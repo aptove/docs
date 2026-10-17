@@ -1,0 +1,54 @@
+---
+title: "Overview"
+description: "The push server handles iOS and Android push notifications without exposing platform credentials to the bridge."
+---
+
+## Why a push server?
+
+The bridge runs on users' machines — it's distributed software. Embedding APNs (Apple) or FCM (Google) credentials in a distributed binary is insecure: anyone could extract them and the credentials would need to be the same for every installation.
+
+Instead, the push server acts as a **credential vault**:
+
+- APNs and FCM credentials live only on Cloudflare infrastructure
+- Each bridge gets a short-lived JWT scoped to `push:write`; if it leaks, it expires in an hour and can't access any other resource
+- The bridge makes one simple HTTP call; the server handles all platform-specific push protocols
+
+## Architecture
+
+The push server is split into two Cloudflare Workers:
+
+<CardGroup cols={2}>
+  <Card title="cf-token" icon="key" href="/push-server/cf-token">
+    Issues short-lived RS256 JWTs to authenticated bridge clients. Exposes a JWKS endpoint so cf-push-relay can verify tokens without calling back.
+  </Card>
+  <Card title="cf-push-relay" icon="bell" href="/push-server/cf-push-relay">
+    Receives device registrations and push requests from the bridge. Fans out notifications to all registered devices via APNs and FCM.
+  </Card>
+</CardGroup>
+
+## Request flow
+
+```
+Bridge                cf-token              cf-push-relay          Apple / Google
+  │                       │                       │                      │
+  │── POST /token ────────►│                       │                      │
+  │◄─ { access_token } ───│                       │                      │
+  │                       │                       │                      │
+  │── POST /register ─────────────────────────────►│                      │
+  │◄─ { ok: true } ──────────────────────────────-│                      │
+  │                       │                       │                      │
+  │── POST /push ──────────────────────────────────►│                      │
+  │                       │                       │── POST (APNs/FCM) ───►│
+  │◄─ { ok: true } ───────────────────────────────│◄─ 200 OK ────────────│
+```
+
+1. The bridge calls `POST /token` on **cf-token** with its `client_id` and `client_secret` to get a short-lived JWT (1 hour).
+2. It calls `POST /register` on **cf-push-relay** with the device token received from the mobile app, using the JWT as a Bearer token.
+3. When the agent produces output, the bridge calls `POST /push` on **cf-push-relay**. The relay fans out to all registered devices for that bridge's JWT subject (`sub` claim).
+
+## Security model
+
+- **Isolation by `sub` claim** — each bridge's JWT has a unique `sub` (its `client_id`). Device registrations and pushes are namespaced by `sub`, so one bridge can never trigger notifications for another bridge's devices.
+- **Short-lived tokens** — JWTs expire after 1 hour. The bridge caches and refreshes them automatically with a 60-second buffer.
+- **No APNs/FCM credentials in the bridge** — the bridge only holds its own `client_id` and `client_secret` for cf-token, never the platform keys.
+- **JWKS verification** — cf-push-relay fetches cf-token's public key via `/.well-known/jwks.json` and caches it in KV. No shared secret between the two workers.

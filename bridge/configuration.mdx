@@ -1,0 +1,128 @@
+---
+title: "Configuration"
+description: "Complete reference for common.toml — the bridge's single configuration file."
+---
+
+## Location
+
+The bridge stores its config in `common.toml` inside the `.aptove-bridge/` directory, which is created in the working directory where you ran the bridge. Use `--config-dir <path>` to override this location.
+
+The file is created automatically by the setup wizard. You can also edit it manually — the bridge re-reads it on the next start.
+
+## Full example
+
+```toml
+# Stable identity for this bridge (auto-generated UUID).
+# Do not change once you have paired devices.
+agent_id = "550e8400-e29b-41d4-a716-446655440000"
+
+# Bearer token for WebSocket authentication (auto-generated).
+auth_token = "your-secret-token"
+
+# Shell command used to launch the AI agent.
+agent_command = "copilot --acp"
+
+# TCP address the WebSocket server binds to (default: 0.0.0.0).
+bind_address = "0.0.0.0"
+
+# Override the LAN IP advertised in the QR / pairing URL.
+# Useful when the bridge is behind NAT or on a specific interface.
+advertise_addr = "192.168.1.42"
+
+# Prevent the system from sleeping while the bridge is running.
+keep_alive = true
+
+# Minimum log level shown in the TUI: ERROR / WARN / INFO / DEBUG / TRACE.
+log_level = "WARN"
+
+# ── Transports ────────────────────────────────────────────────────────────────
+
+[transports.local]
+enabled = true
+port = 8765   # WebSocket port
+tls = true    # Self-signed TLS; the app pins the certificate fingerprint
+
+[transports.cloudflare]
+enabled = false
+hostname = "https://your-tunnel.example.com"
+tunnel_id = "your-tunnel-uuid"
+tunnel_secret = "your-tunnel-credential-secret"
+account_id = "your-cf-account-id"
+# Cloudflare Access service token (optional — gates the tunnel endpoint)
+client_id = "your-cf-access-client-id"
+client_secret = "your-cf-access-client-secret"
+
+[transports.tailscale-serve]
+enabled = false
+port = 8766
+
+# ── Slash Commands ────────────────────────────────────────────────────────────
+# Advertised to the mobile app when an agent doesn't send available_commands_update.
+
+[[slash_commands]]
+name = "fix"
+description = "Fix the selected code"
+
+[[slash_commands]]
+name = "explain"
+description = "Explain the code"
+input_hint = "what to focus on"   # Shows a text input in the app
+
+# ── Push Relay ────────────────────────────────────────────────────────────────
+# Push notifications are disabled when this section is absent.
+
+[push_relay]
+url = "https://push.aptove.com"
+token_url = "https://token.aptove.com"
+client_id = "your-push-client-id"
+client_secret = "your-push-client-secret"
+```
+
+## Field reference
+
+### Top-level fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `agent_id` | string | auto-generated | Stable UUID that identifies this bridge across all transports. Do not change after pairing. |
+| `auth_token` | string | auto-generated | Bearer token required for WebSocket connections from the app. |
+| `agent_command` | string | — | Shell command to launch the AI agent (e.g. `"copilot --acp"`). |
+| `bind_address` | string | `"0.0.0.0"` | TCP address the WebSocket server binds to. |
+| `advertise_addr` | string | auto-detected | Override the LAN IP included in the pairing QR code. |
+| `keep_alive` | bool | `true` | Prevent system sleep while the bridge is running. |
+| `log_level` | string | `"WARN"` | Minimum log level shown in the TUI (`ERROR` / `WARN` / `INFO` / `DEBUG` / `TRACE`). |
+
+### `[transports.<name>]`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `enabled` | bool | Whether this transport is active. |
+| `port` | integer | TCP port for the WebSocket server. Defaults to `8765` (local) or `8766` (tailscale-serve). |
+| `tls` | bool | Enable TLS. Defaults to `true` for local transport. |
+| `hostname` | string | *(Cloudflare only)* Public tunnel hostname, e.g. `https://agent.example.com`. |
+| `tunnel_id` | string | *(Cloudflare only)* Cloudflare tunnel UUID. |
+| `tunnel_secret` | string | *(Cloudflare only)* Tunnel credential secret. |
+| `account_id` | string | *(Cloudflare only)* Cloudflare account ID. |
+| `client_id` | string | *(Cloudflare only)* Cloudflare Access service token client ID. |
+| `client_secret` | string | *(Cloudflare only)* Cloudflare Access service token client secret. |
+
+### `[[slash_commands]]`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Command name without the leading `/` (e.g. `"fix"`). |
+| `description` | string | Human-readable description shown in the app's command picker. |
+| `input_hint` | string | *(optional)* If set, the command accepts free text. This string is shown as the input placeholder. |
+
+### `[push_relay]`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `url` | string | Base URL of the push relay service. |
+| `token_url` | string | Base URL of the JWT token service. |
+| `client_id` | string | OAuth2 client ID issued by the token service. |
+| `client_secret` | string | OAuth2 client secret issued by the token service. |
+
+<Note>
+Push notifications are silently disabled if `[push_relay]` is absent or any field is empty.
+</Note>

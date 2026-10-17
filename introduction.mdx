@@ -1,0 +1,52 @@
+---
+title: "Introduction"
+description: "Aptove lets you chat with any ACP-compatible AI agent from your iOS or Android device."
+---
+
+## What is Aptove?
+
+Aptove is an open-source mobile client for AI agents built on the [Agent Client Protocol (ACP)](https://github.com/agent-client-protocol). It consists of three main components:
+
+<CardGroup cols={3}>
+  <Card title="Bridge" icon="bridge" href="/bridge/overview">
+    A local Rust binary that runs on your machine and exposes any ACP-compatible agent over WebSocket. Supports multiple transports so you can connect from anywhere.
+  </Card>
+  <Card title="Mobile App" icon="mobile" href="/mobile-app/overview">
+    Native iOS and Android apps that connect to the bridge, let you chat with agents, and receive push notifications when your agent has new activity.
+  </Card>
+  <Card title="Push Server" icon="bell" href="/push-server/overview">
+    A pair of Cloudflare Workers that handle push notifications to iOS (APNs) and Android (FCM) without exposing platform credentials to the bridge.
+  </Card>
+</CardGroup>
+
+## How it works
+
+```
+Mobile App  ──[transport]──  Bridge  ──[stdio]──  AI Agent
+                                │
+                         Push Server
+                          (APNs / FCM)
+```
+
+1. You run the **bridge** on the same machine as your AI agent.
+2. You scan a QR code in the bridge TUI to pair your phone.
+3. The **mobile app** opens a WebSocket connection through whichever transport you chose (local, Cloudflare, or Tailscale).
+4. Messages flow bidirectionally over ACP — the bridge pipes them to your agent's stdin/stdout.
+5. When the agent responds while your phone is in the background, the bridge triggers a push notification via the **push server**.
+
+## Quickstart
+
+<Steps>
+  <Step title="Install the bridge">
+    Download the latest release from [GitHub](https://github.com/aptove/bridge/releases) or build from source with `cargo build --release`.
+  </Step>
+  <Step title="Run the bridge">
+    Run `aptove-bridge` in your terminal. The setup wizard walks you through choosing a transport and an agent command.
+  </Step>
+  <Step title="Pair your phone">
+    The bridge displays a QR code. Open the Aptove app, tap **Add Agent**, and scan it.
+  </Step>
+  <Step title="Start chatting">
+    Send your first message. The bridge launches your agent and relays responses back to your phone in real time.
+  </Step>
+</Steps>

@@ -1,0 +1,74 @@
+---
+title: "Pairing"
+description: "How to connect the Aptove app to a bridge using QR codes or manual entry."
+---
+
+## Overview
+
+Pairing is the one-time process of exchanging connection credentials between the app and the bridge. After pairing, the app stores the credentials securely and reconnects automatically on every launch.
+
+## QR pairing (recommended)
+
+<Steps>
+  <Step title="Show the QR code">
+    The bridge displays a QR code automatically after the setup wizard, or you can show it at any time by typing `/qr` in the bridge TUI.
+  </Step>
+  <Step title="Scan the code">
+    In the Aptove app, tap **Add Agent**, then point your camera at the QR code. The app decodes the pairing URL, contacts the bridge, and exchanges credentials.
+  </Step>
+  <Step title="Confirm the pairing code">
+    The bridge shows a 6-digit one-time code. The app also shows the same code — verify they match and confirm.
+  </Step>
+  <Step title="Done">
+    The agent appears in your list with a green connected indicator. The bridge starts your agent process and the chat is ready.
+  </Step>
+</Steps>
+
+## Pairing URL format
+
+The QR code encodes a URL with this structure:
+
+```
+https://<host>:<port>/pair/<transport>?code=<6-digit>&fp=<cert-fingerprint>
+```
+
+| Component | Description |
+|-----------|-------------|
+| `host:port` | Bridge address (LAN IP for local, public hostname for Cloudflare/Tailscale) |
+| `/pair/local` | Local transport — self-signed TLS, certificate fingerprint pinned |
+| `/pair/cloudflare` | Cloudflare transport — returns Cloudflare Access service token credentials |
+| `/pair/tailscale` | Tailscale transport — standard TLS via Tailscale Serve |
+| `code` | 6-digit one-time code (expires after use) |
+| `fp` | SHA-256 certificate fingerprint (local transport only) |
+
+## Manual pairing
+
+If scanning isn't possible, you can enter the pairing URL manually:
+
+1. In the app, tap **Add Agent** → **Enter manually**.
+2. Copy the pairing URL from the bridge (`/qr` shows it as text below the QR image).
+3. Paste it and tap **Connect**.
+
+## Multiple agents
+
+The app supports multiple agents simultaneously. Each bridge creates an independent agent entry identified by its `agent_id`. If you re-pair a bridge that the app has seen before (same `agent_id`), the existing entry is updated rather than duplicated.
+
+## Credential storage
+
+After pairing, the app stores the following in the system Keychain, keyed by the endpoint ID:
+
+- WebSocket URL
+- Bearer auth token
+- Certificate fingerprint (local transport)
+- Cloudflare Access client ID and secret (Cloudflare transport)
+- Push relay URL (if the bridge has push configured)
+
+Credentials are never stored in plain text or synced to iCloud.
+
+## Reconnection
+
+The app attempts to reconnect automatically:
+
+- **On launch** — all previously paired agents connect in the background
+- **On network change** — reconnects when Wi-Fi or cellular connectivity changes
+- **Periodic retry** — disconnected agents are retried every 30 seconds in the background

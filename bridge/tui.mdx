@@ -1,0 +1,64 @@
+---
+title: "Terminal UI"
+description: "The bridge's built-in terminal interface for managing the bridge interactively."
+---
+
+## Overview
+
+Running `aptove-bridge` without arguments opens the TUI — a full-screen terminal application built with [Ratatui](https://ratatui.rs). It handles both initial setup and day-to-day operation.
+
+## Screens
+
+### Setup wizard
+
+On first run (or when required configuration is missing), the wizard runs before the bridge starts:
+
+| Step | Triggered when |
+|------|---------------|
+| Agent select | `agent_command` is not set |
+| Transport pick | No transports are enabled, or 2+ are enabled |
+| Cloudflare setup | Cloudflare transport is enabled but `tunnel_id` is missing |
+| Push setup | `[push_relay]` section is absent |
+
+The wizard writes your choices to `common.toml` and then starts the bridge automatically.
+
+### Running screen
+
+Once the bridge is running, the TUI shows a three-panel layout:
+
+- **Status bar** (top) — bridge health, connected clients, active transport
+- **Log panel** (center) — scrollable log stream filtered by `log_level`
+- **Input bar** (bottom) — accepts slash commands
+
+## Slash commands (TUI)
+
+Type these in the input bar while the bridge is running:
+
+| Command | Description |
+|---------|-------------|
+| `/qr` | Show the pairing QR code for the active transport |
+| `/status` | Show bridge status and connected clients |
+| `/help` | List all available commands |
+| `/test-push` | Send a test push notification to all registered devices |
+| `/reconnect` | Reconnect all transports |
+| `/config` | Open the setup wizard to change configuration |
+| `/quit` | Stop the bridge and exit |
+
+## Keyboard shortcuts
+
+| Key | Action |
+|-----|--------|
+| `Esc` | Close popup / cancel wizard step |
+| `Enter` | Confirm / submit |
+| `↑` / `↓` | Navigate lists |
+| `q` | Quit (when no input is focused) |
+
+## Popups
+
+- **QR code** — displayed after `/qr` or automatically after the wizard completes. Scan with the Aptove app to pair.
+- **Status** — shows active transports, client count, push relay health.
+- **Help** — lists all TUI commands.
+
+<Note>
+The setup wizard can be re-opened at any time while the bridge is running by typing `/config`. Press `Esc` to cancel and return to the running screen without saving changes.
+</Note>

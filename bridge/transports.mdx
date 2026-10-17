@@ -1,0 +1,75 @@
+---
+title: "Transports"
+description: "How to connect the Aptove app to the bridge from different network locations."
+---
+
+A transport is the network path the mobile app uses to reach the bridge. You can enable multiple transports simultaneously — each one starts its own WebSocket server and gets its own pairing QR code.
+
+## Local (same network)
+
+The simplest option. The bridge listens on a TCP port on your LAN. The phone must be on the same Wi-Fi network (or connected via USB/hotspot).
+
+```toml
+[transports.local]
+enabled = true
+port = 8765   # default
+tls = true    # recommended
+```
+
+**TLS:** The bridge auto-generates a self-signed certificate on first run. The pairing QR code includes the certificate fingerprint (`fp=SHA256:...`) so the app can pin it — no CA required.
+
+**When to use:** Development, home use, or any time your phone and machine are on the same network.
+
+## Cloudflare Tunnel
+
+Routes traffic through Cloudflare's global network via `cloudflared`. No port-forwarding or VPN needed. The bridge downloads and manages the `cloudflared` binary automatically.
+
+```toml
+[transports.cloudflare]
+enabled = true
+hostname = "https://agent.example.com"
+tunnel_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+tunnel_secret = "your-tunnel-credential-secret"
+account_id = "your-cf-account-id"
+```
+
+### Optional: Cloudflare Access
+
+Gate the tunnel behind [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/) for an extra layer of authentication. Create a service token in the Cloudflare Zero Trust dashboard and add the credentials:
+
+```toml
+[transports.cloudflare]
+# ... other fields ...
+client_id = "your-service-token-client-id.access"
+client_secret = "your-service-token-client-secret"
+```
+
+The app automatically sends these credentials in the `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers.
+
+**When to use:** Remote access from anywhere; no VPN; corporate environments with Cloudflare Zero Trust.
+
+## Tailscale
+
+Exposes the bridge through [Tailscale Serve](https://tailscale.com/kb/1242/tailscale-serve), which makes the bridge reachable on your tailnet.
+
+```toml
+[transports.tailscale-serve]
+enabled = true
+port = 8766   # default
+```
+
+The bridge calls `tailscale serve` to set up the reverse proxy. You must have Tailscale installed and authenticated on the machine.
+
+**When to use:** When all your devices are already on a tailnet; provides encrypted, authenticated access without any cloud credentials.
+
+## Choosing a transport
+
+| Transport | Network requirement | Setup complexity | Best for |
+|-----------|--------------------|--------------------|----------|
+| Local | Same Wi-Fi / LAN | Low | Home, development |
+| Cloudflare | Any internet | Medium | Remote access, public tunnel |
+| Tailscale | Tailnet membership | Low (if already using Tailscale) | Teams, self-hosted |
+
+<Tip>
+You can run all three transports at once. Each gets its own QR code and pairing endpoint, and the app stores credentials per-endpoint. This is useful if you work from multiple locations.
+</Tip>

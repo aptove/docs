@@ -1,0 +1,36 @@
+---
+title: "Overview"
+description: "The Aptove iOS and Android apps let you chat with any ACP-compatible AI agent from your phone."
+---
+
+## What is the Aptove app?
+
+The Aptove app is a native mobile client for AI agents. It connects to the Aptove Bridge over WebSocket and provides a chat interface for interacting with any agent that speaks the [Agent Client Protocol (ACP)](https://github.com/agent-client-protocol).
+
+<CardGroup cols={2}>
+  <Card title="iOS" icon="apple" href="https://github.com/aptove/ios">
+    Native SwiftUI app. Supports all bridge transport types and push notifications via APNs.
+  </Card>
+  <Card title="Android" icon="android" href="https://github.com/aptove/android">
+    Native Android app. Supports all bridge transport types and push notifications via FCM.
+  </Card>
+</CardGroup>
+
+## Features
+
+- **Multi-agent support** — connect to multiple bridges and switch between agents from the agent list
+- **Chat with voice** — send messages by typing or by speaking; no additional subscription required
+- **Slash commands** — trigger agent-defined commands from a built-in command picker
+- **Push notifications** — get notified when an agent responds while the app is in the background
+- **Auto-reconnect** — the app reconnects automatically when your network changes or the bridge restarts
+- **Multiple transports** — works with local LAN, Cloudflare Tunnel, and Tailscale connections
+- **Secure storage** — connection credentials are stored in the system Keychain
+
+## Getting started
+
+1. Install the app from the App Store (iOS) or Play Store (Android).
+2. Make sure the [bridge](/bridge/overview) is running on your machine.
+3. Tap **Add Agent** and scan the QR code shown in the bridge TUI.
+4. Start chatting.
+
+See [Pairing](/mobile-app/pairing) for a detailed walkthrough of the connection setup.

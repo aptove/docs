@@ -1,0 +1,60 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Aptove",
+  "logo": {
+    "dark": "/logo.png",
+    "light": "/logo.png"
+  },
+  "favicon": "/logo.png",
+  "colors": {
+    "primary": "#6366f1",
+    "light": "#818cf8",
+    "dark": "#4f46e5"
+  },
+  "topbarLinks": [
+    {
+      "name": "aptove.com",
+      "url": "https://aptove.com"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "GitHub",
+    "url": "https://github.com/aptove"
+  },
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": ["introduction"]
+    },
+    {
+      "group": "Bridge",
+      "pages": [
+        "bridge/overview",
+        "bridge/configuration",
+        "bridge/transports",
+        "bridge/slash-commands",
+        "bridge/tui"
+      ]
+    },
+    {
+      "group": "Mobile App",
+      "pages": [
+        "mobile-app/overview",
+        "mobile-app/pairing",
+        "mobile-app/features"
+      ]
+    },
+    {
+      "group": "Push Server",
+      "pages": [
+        "push-server/overview",
+        "push-server/cf-token",
+        "push-server/cf-push-relay"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/aptove",
+    "discord": "https://discord.gg/gD7AMxBy9y"
+  }
+}

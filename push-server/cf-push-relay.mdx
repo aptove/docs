@@ -1,0 +1,179 @@
+---
+title: "cf-push-relay"
+description: "A Cloudflare Worker that receives push requests from the bridge and delivers them to iOS and Android devices."
+---
+
+## What it does
+
+`cf-push-relay` is the delivery side of the push server. It:
+
+- Accepts device token registrations from the bridge
+- On a push request, fans out notifications to all registered devices for that client
+- Manages APNs (Apple) and FCM (Google) auth tokens on a cron schedule so each push costs near-zero CPU
+
+## Two-worker design
+
+The Worker actually contains two logical workers in one script:
+
+| Worker | Trigger | Responsibility |
+|--------|---------|----------------|
+| Push Worker | HTTP requests | `/register`, `/push`, `/health` endpoints |
+| Token Worker | Cron (every 45 min) | Pre-generates APNs JWTs and FCM OAuth2 tokens and caches them in KV |
+
+The cron keeps auth tokens fresh in KV so the Push Worker can pick them up instantly at push time without any token generation overhead. If the cron hasn't run yet, the Push Worker falls back to on-demand generation.
+
+## API
+
+All endpoints require `Authorization: Bearer <jwt>` where the JWT is issued by `cf-token`.
+
+### `GET /health`
+
+Health check. No authentication required.
+
+```json
+{ "ok": true, "status": "healthy", "timestamp": "2026-01-01T00:00:00.000Z" }
+```
+
+---
+
+### `POST /register`
+
+Register a device token. The JWT's `sub` claim is used as the isolation key — only push requests from the same client will reach this device.
+
+**Request body:**
+
+```json
+{
+  "device_token": "abc123...",
+  "platform": "ios",
+  "bundle_id": "com.example.aptove"
+}
+```
+
+| Field | Required | Values |
+|-------|----------|--------|
+| `device_token` | Yes | APNs or FCM device token |
+| `platform` | Yes | `"ios"` or `"android"` |
+| `bundle_id` | No | App bundle ID (used for APNs environment routing) |
+
+**Response:**
+
+```json
+{ "ok": true, "message": "Device registered" }
+```
+
+---
+
+### `DELETE /register`
+
+Unregister a device token (e.g. when the user logs out or the app is uninstalled).
+
+**Request body:**
+
+```json
+{ "device_token": "abc123..." }
+```
+
+---
+
+### `POST /push`
+
+Send a push notification to all devices registered for the authenticated client.
+
+**Request body:**
+
+```json
+{
+  "title": "Agent Name",
+  "body": "Your agent has new activity",
+  "data": {
+    "agentName": "Agent Name"
+  }
+}
+```
+
+**Response:**
+
+```json
+{
+  "ok": true,
+  "results": [
+    { "platform": "ios", "token": "abc...", "ok": true },
+    { "platform": "android", "token": "xyz...", "ok": true }
+  ]
+}
+```
+
+Notifications are sent to all registered devices in parallel.
+
+## Platform credentials
+
+### APNs (iOS)
+
+The Worker uses token-based APNs authentication (`.p8` key file):
+
+| Variable | Description |
+|----------|-------------|
+| `APNS_PRIVATE_KEY` | ES256 private key in PEM format (from Apple Developer portal) |
+| `APNS_KEY_ID` | 10-character key ID |
+| `APNS_TEAM_ID` | 10-character Apple Developer Team ID |
+| `APNS_BUNDLE_ID` | App bundle ID (e.g. `com.aptove.app`) |
+
+The cron generates a new ES256 JWT every 45 minutes and stores it in KV as `apns:jwt`. APNs JWTs are valid for up to 1 hour.
+
+### FCM (Android)
+
+The Worker uses a Firebase service account for OAuth2 access tokens:
+
+| Variable | Description |
+|----------|-------------|
+| `FCM_PRIVATE_KEY` | RS256 private key from the Firebase service account JSON |
+| `FCM_CLIENT_EMAIL` | Service account email from the Firebase service account JSON |
+| `FCM_PROJECT_ID` | Firebase project ID |
+
+The cron generates a new OAuth2 access token every 45 minutes and stores it in KV as `fcm:token`. FCM tokens are valid for 1 hour.
+
+## KV namespaces
+
+| Binding | Contents |
+|---------|----------|
+| `DEVICE_TOKENS` | Device registrations, keyed by `<sub>:devices` |
+| `AUTH_CACHE` | Pre-generated APNs JWTs and FCM tokens |
+| `JWKS_CACHE` | Cached JWKS from cf-token (refreshed on unknown `kid`) |
+
+## JWT verification
+
+The relay verifies every request's Bearer JWT against cf-token's JWKS:
+
+1. Fetch `/.well-known/jwks.json` from cf-token (cached in KV for 1 hour)
+2. Verify the RS256 signature, `iss`, `aud`, `exp`, and `scope = "push:write"`
+3. Extract `sub` as the isolation key for device lookup
+
+If the JWKS cache doesn't contain the JWT's `kid`, the cache is invalidated and the JWKS is re-fetched immediately (handles key rotation).
+
+## Deployment
+
+```bash
+cd cf-push-relay
+wrangler deploy
+
+# APNs secrets
+wrangler secret put APNS_PRIVATE_KEY
+wrangler secret put APNS_KEY_ID
+wrangler secret put APNS_TEAM_ID
+wrangler secret put APNS_BUNDLE_ID
+
+# FCM secrets
+wrangler secret put FCM_PRIVATE_KEY
+wrangler secret put FCM_CLIENT_EMAIL
+wrangler secret put FCM_PROJECT_ID
+
+# Token service
+wrangler secret put TOKEN_ISSUER
+wrangler secret put TOKEN_AUDIENCE
+wrangler secret put JWKS_URL
+```
+
+<Tip>
+Create KV namespaces first: `wrangler kv namespace create DEVICE_TOKENS` and `wrangler kv namespace create AUTH_CACHE`. Add the returned IDs to `wrangler.jsonc` before deploying.
+</Tip>

@@ -1,0 +1,148 @@
+---
+title: "cf-token"
+description: "A Cloudflare Worker that issues RS256 JWTs to authenticated bridge clients."
+---
+
+## What it does
+
+`cf-token` is a lightweight token service that issues short-lived RS256 JWTs to bridge clients. It also exposes a JWKS endpoint so `cf-push-relay` can verify tokens independently without calling back to cf-token.
+
+## API
+
+### `GET /health`
+
+Health check. No authentication required.
+
+```json
+{ "ok": true, "status": "healthy", "timestamp": "2026-01-01T00:00:00.000Z" }
+```
+
+---
+
+### `GET /.well-known/jwks.json`
+
+Returns the RS256 public key in JWK Set format. Used by `cf-push-relay` to verify JWTs offline.
+
+```json
+{
+  "keys": [
+    {
+      "kty": "RSA",
+      "use": "sig",
+      "alg": "RS256",
+      "kid": "key-id",
+      "n": "...",
+      "e": "AQAB"
+    }
+  ]
+}
+```
+
+Response is cached for 1 hour (`Cache-Control: public, max-age=3600`).
+
+---
+
+### `POST /token`
+
+Exchange client credentials for a JWT. This is the only endpoint the bridge calls.
+
+**Request body:**
+
+```json
+{
+  "client_id": "your-client-id",
+  "client_secret": "your-client-secret"
+}
+```
+
+**Response:**
+
+```json
+{
+  "access_token": "eyJ...",
+  "token_type": "Bearer",
+  "expires_in": 3600
+}
+```
+
+**JWT claims:**
+
+| Claim | Value |
+|-------|-------|
+| `iss` | `TOKEN_ISSUER` env var |
+| `sub` | `client_id` |
+| `aud` | `TOKEN_AUDIENCE` env var |
+| `iat` | Issued-at timestamp |
+| `exp` | `iat + 3600` |
+| `scope` | `"push:write"` or `"admin"` |
+
+---
+
+### `POST /clients` *(admin only)*
+
+Create a new bridge client. Returns a generated `client_secret` — store it securely, it is not recoverable.
+
+**Headers:** `Authorization: Bearer <admin-jwt>`
+
+**Request body:**
+
+```json
+{
+  "client_id": "my-bridge-client",
+  "scope": "push:write"
+}
+```
+
+**Response (201):**
+
+```json
+{
+  "ok": true,
+  "client_id": "my-bridge-client",
+  "client_secret": "generated-secret"
+}
+```
+
+---
+
+### `DELETE /clients/:id` *(admin only)*
+
+Revoke a client. Any JWTs already issued for this client will still be valid until they expire.
+
+**Headers:** `Authorization: Bearer <admin-jwt>`
+
+```json
+{ "ok": true, "message": "Client deleted" }
+```
+
+## Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `SIGNING_PRIVATE_KEY` | RS256 private key in PKCS#8 PEM format, stored as a Cloudflare secret |
+| `SIGNING_KEY_ID` | Key ID included in JWTs and JWKS (`kid` claim) |
+| `TOKEN_ISSUER` | `iss` claim in issued JWTs (e.g. `"https://token.aptove.com"`) |
+| `TOKEN_AUDIENCE` | `aud` claim in issued JWTs (e.g. `"https://push.aptove.com"`) |
+| `ADMIN_CLIENT_ID` | Built-in admin client ID |
+| `ADMIN_CLIENT_SECRET` | Built-in admin client secret (timing-safe comparison) |
+| `CLIENT_REGISTRY` | KV namespace binding for storing client records |
+
+## KV storage
+
+Client records are stored in the `CLIENT_REGISTRY` KV namespace. Each key is the `client_id`; the value is a JSON object with a bcrypt-hashed secret and scope:
+
+```json
+{
+  "secret_hash": "$2b$10$...",
+  "scope": "push:write"
+}
+```
+
+## Deployment
+
+```bash
+cd cf-token
+wrangler deploy
+wrangler secret put SIGNING_PRIVATE_KEY
+wrangler secret put ADMIN_CLIENT_SECRET
+```

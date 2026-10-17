@@ -1,0 +1,64 @@
+---
+title: "Overview"
+description: "The Aptove Bridge is a local Rust binary that connects your AI agent to the Aptove mobile app."
+---
+
+## What is the bridge?
+
+The bridge is a small, self-contained binary that runs on any machine where your AI agent lives — your laptop, a home server, or a cloud VM. It does three things:
+
+- **Launches your agent** as a child process and pipes ACP messages over stdin/stdout.
+- **Exposes a WebSocket server** so the Aptove mobile app can connect and exchange messages.
+- **Manages transports** so you can reach the bridge whether you're on the same Wi-Fi network or on the other side of the world.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│                  aptove-bridge                   │
+│                                                  │
+│   WebSocket server ◄──── Transport layer         │
+│          │                (local / CF / TS)      │
+│          ▼                                       │
+│     Agent process (stdio ACP)                    │
+│          │                                       │
+│          ▼                                       │
+│     Push relay client ──► cf-push-relay          │
+└─────────────────────────────────────────────────┘
+```
+
+## Installation
+
+### Pre-built binary
+
+Download the latest release for your platform from the [GitHub releases page](https://github.com/aptove/bridge/releases).
+
+### Build from source
+
+```bash
+git clone https://github.com/aptove/bridge
+cd bridge
+cargo build --release
+# binary is at target/release/aptove-bridge
+```
+
+## First run
+
+Running `aptove-bridge` with no arguments starts the interactive TUI. On first launch, the setup wizard appears and walks you through:
+
+1. Choosing an agent command (e.g. `copilot --acp`)
+2. Picking a transport (local, Cloudflare, or Tailscale)
+3. Configuring any transport-specific credentials
+
+After setup, the bridge starts and immediately shows a QR code for pairing your phone.
+
+## Configuration file
+
+All settings are stored in `common.toml` inside the `.aptove-bridge/` directory created wherever you ran the bridge. See [Configuration](/bridge/configuration) for the full reference.
+
+## CLI flags
+
+| Flag | Description |
+|------|-------------|
+| `--config-dir <path>` | Use a custom config directory instead of `.aptove-bridge/` |
+| `setup` | Run the setup wizard without starting the bridge |
