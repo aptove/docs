@@ -52,6 +52,33 @@ Running `aptove-bridge` with no arguments starts the interactive TUI. On first l
 
 After setup, the bridge starts and immediately shows a QR code for pairing your phone.
 
+## Supported agents
+
+The wizard offers a list of known agents. Select **Custom** to use any ACP-compatible agent not on the list.
+
+| # | Agent | Command |
+|---|-------|---------|
+| 1 | GitHub Copilot | `copilot --acp` |
+| 2 | Gemini | `gemini --experimental-acp` |
+| 3 | Goose | `goose acp` |
+| 4 | **Custom** | *(any command)* |
+
+### Claude (via `claude-agent-acp`)
+
+To use Claude, select **Custom** and enter:
+
+```
+npx @agentclientprotocol/claude-agent-acp
+```
+
+This runs the [`@agentclientprotocol/claude-agent-acp`](https://www.npmjs.com/package/@agentclientprotocol/claude-agent-acp) package, which wraps Claude in an ACP-compatible stdio interface. Node.js must be installed on your machine.
+
+You can also set this directly in `common.toml`:
+
+```toml
+agent_command = "npx @agentclientprotocol/claude-agent-acp"
+```
+
 ## Configuration file
 
 All settings are stored in `common.toml` inside the `.aptove-bridge/` directory created wherever you ran the bridge. See [Configuration](/bridge/configuration) for the full reference.
