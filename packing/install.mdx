@@ -1,0 +1,68 @@
+---
+title: "Installation"
+description: "How to install the Aptove Bridge on your machine."
+---
+
+## Pre-built binary (recommended)
+
+Download the latest pre-compiled binary for your platform from the [GitHub releases page](https://github.com/aptove/bridge/releases/latest). No Rust toolchain required.
+
+```bash
+# macOS (Apple Silicon)
+curl -L https://github.com/aptove/bridge/releases/latest/download/bridge-aarch64-apple-darwin.tar.gz | tar xz
+./bridge
+
+# macOS (Intel)
+curl -L https://github.com/aptove/bridge/releases/latest/download/bridge-x86_64-apple-darwin.tar.gz | tar xz
+./bridge
+
+# Linux (x86_64)
+curl -L https://github.com/aptove/bridge/releases/latest/download/bridge-x86_64-unknown-linux-gnu.tar.gz | tar xz
+./bridge
+```
+
+## npm
+
+If you have Node.js installed, you can run the bridge directly via npx without any manual download:
+
+```bash
+npx @aptove/bridge
+```
+
+Or install it globally:
+
+```bash
+npm install -g @aptove/bridge
+bridge
+```
+
+## cargo install
+
+If you have a [Rust toolchain](https://rustup.rs) installed, `cargo install` downloads the source from [crates.io](https://crates.io/crates/aptove-bridge) and compiles it locally:
+
+```bash
+cargo install aptove-bridge
+bridge
+```
+
+The compiled binary is placed in `~/.cargo/bin/bridge`. This produces the same binary as a pre-built release — it just requires Rust and takes a few minutes to compile.
+
+## Build from source
+
+```bash
+git clone https://github.com/aptove/bridge
+cd bridge
+cargo build --release
+./target/release/bridge
+```
+
+Use this if you want to build a specific commit or develop against the bridge codebase.
+
+## Comparison
+
+| Method | Requires | Speed | Best for |
+|--------|----------|-------|----------|
+| Pre-built binary | Nothing | Instant | Most users |
+| npx | Node.js | Fast (cached after first run) | Node.js developers |
+| `cargo install` | Rust toolchain | ~2–5 min compile | Rust developers |
+| Build from source | Rust toolchain + git | ~2–5 min compile | Contributors / custom builds |

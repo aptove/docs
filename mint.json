@@ -28,7 +28,7 @@
   "navigation": [
     {
       "group": "Getting Started",
-      "pages": ["introduction"]
+      "pages": ["introduction", "packing/install"]
     },
     {
       "group": "Bridge",
