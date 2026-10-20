@@ -55,6 +55,7 @@
       "group": "Push Server",
       "pages": [
         "push-server/overview",
+        "push-server/architecture",
         "push-server/cf-token",
         "push-server/cf-push-relay"
       ]
