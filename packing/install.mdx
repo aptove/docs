@@ -3,7 +3,21 @@ title: "Installation"
 description: "How to install the Aptove Bridge on your machine."
 ---
 
-## Pre-built binary (recommended)
+## Shell installer (recommended)
+
+The quickest way to install on macOS and Linux:
+
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/aptove/bridge/releases/latest/download/bridge-installer.sh | sh
+```
+
+On Windows (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://github.com/aptove/bridge/releases/latest/download/bridge-installer.ps1 | iex"
+```
+
+## Pre-built binary
 
 Download the latest pre-compiled binary for your platform from the [GitHub releases page](https://github.com/aptove/bridge/releases/latest). No Rust toolchain required.
 
