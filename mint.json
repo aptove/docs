@@ -37,6 +37,7 @@
         "bridge/configuration",
         "bridge/transports",
         "bridge/local-transport",
+        "bridge/cloudflare-transport",
         "bridge/slash-commands",
         "bridge/tui"
       ]
