@@ -36,6 +36,7 @@
         "bridge/overview",
         "bridge/configuration",
         "bridge/transports",
+        "bridge/local-transport",
         "bridge/slash-commands",
         "bridge/tui"
       ]
