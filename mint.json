@@ -56,6 +56,7 @@
       "pages": [
         "push-server/overview",
         "push-server/architecture",
+        "push-server/deploy",
         "push-server/cf-token",
         "push-server/cf-push-relay"
       ]
