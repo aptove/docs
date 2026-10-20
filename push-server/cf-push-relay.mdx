@@ -138,8 +138,7 @@ The cron generates a new OAuth2 access token every 45 minutes and stores it in K
 | Binding | Contents |
 |---------|----------|
 | `DEVICE_TOKENS` | Device registrations, keyed by `<sub>:devices` |
-| `AUTH_CACHE` | Pre-generated APNs JWTs and FCM tokens |
-| `JWKS_CACHE` | Cached JWKS from cf-token (refreshed on unknown `kid`) |
+| `AUTH_TOKENS` | Pre-generated APNs JWTs, FCM tokens, and JWKS cache |
 
 ## JWT verification
 
@@ -151,29 +150,57 @@ The relay verifies every request's Bearer JWT against cf-token's JWKS:
 
 If the JWKS cache doesn't contain the JWT's `kid`, the cache is invalidated and the JWKS is re-fetched immediately (handles key rotation).
 
+## Variables vs secrets
+
+| Name | Where set | Secret? |
+|------|-----------|---------|
+| `APNS_BUNDLE_ID` | `wrangler.toml` `[vars]` | No |
+| `APNS_SANDBOX` | `wrangler.toml` `[vars]` | No |
+| `FCM_PROJECT_ID` | `wrangler.toml` `[vars]` | No |
+| `TOKEN_SERVICE_URL` | `wrangler.toml` `[vars]` | No |
+| `APNS_PRIVATE_KEY` | `wrangler secret` | **Yes** |
+| `APNS_KEY_ID` | `wrangler secret` | **Yes** |
+| `APNS_TEAM_ID` | `wrangler secret` | **Yes** |
+| `FCM_PRIVATE_KEY` | `wrangler secret` | **Yes** |
+| `FCM_CLIENT_EMAIL` | `wrangler secret` | **Yes** |
+
+> `APNS_SANDBOX` should be `"true"` for debug/development builds and `"false"` for production/TestFlight.
+
 ## Deployment
+
+### Manual
 
 ```bash
 cd cf-push-relay
-wrangler deploy
 
-# APNs secrets
-wrangler secret put APNS_PRIVATE_KEY
-wrangler secret put APNS_KEY_ID
-wrangler secret put APNS_TEAM_ID
-wrangler secret put APNS_BUNDLE_ID
+# Create KV namespaces first (one-time)
+npx wrangler kv namespace create DEVICE_TOKENS
+npx wrangler kv namespace create AUTH_TOKENS
+# Paste the returned IDs into wrangler.toml
 
-# FCM secrets
-wrangler secret put FCM_PRIVATE_KEY
-wrangler secret put FCM_CLIENT_EMAIL
-wrangler secret put FCM_PROJECT_ID
+npm ci
+npx wrangler deploy
 
-# Token service
-wrangler secret put TOKEN_ISSUER
-wrangler secret put TOKEN_AUDIENCE
-wrangler secret put JWKS_URL
+# Set secrets
+npx wrangler secret put APNS_PRIVATE_KEY
+npx wrangler secret put APNS_KEY_ID
+npx wrangler secret put APNS_TEAM_ID
+npx wrangler secret put FCM_PRIVATE_KEY    # skip if iOS only
+npx wrangler secret put FCM_CLIENT_EMAIL   # skip if iOS only
 ```
 
-<Tip>
-Create KV namespaces first: `wrangler kv namespace create DEVICE_TOKENS` and `wrangler kv namespace create AUTH_CACHE`. Add the returned IDs to `wrangler.jsonc` before deploying.
-</Tip>
+### Automated (GitHub Actions)
+
+The repository has a `.github/workflows/deploy.yml` that deploys on every version tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+Configure two GitHub Actions secrets:
+
+| Secret | Value |
+|--------|-------|
+| `CLOUDFLARE_API_TOKEN` | API token with Edit Workers permission |
+| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
