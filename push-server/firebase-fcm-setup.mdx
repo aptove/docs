@@ -1,0 +1,203 @@
+---
+title: "Firebase FCM Setup"
+description: "Configure Firebase Cloud Messaging to send push notifications to Android devices via cf-push-relay."
+---
+
+FCM uses OAuth2 authentication with service account credentials. You'll need:
+- **Firebase Project** — container for your app and services
+- **Service Account Private Key** — RSA private key for OAuth2 authentication
+- **Service Account Email** — client email for the service account
+- **Project ID** — your Firebase project identifier
+
+## Cost
+
+FCM is completely free:
+
+| Item | Cost |
+|------|------|
+| Firebase Project | Free (unlimited projects) |
+| FCM API usage | Free (unlimited push notifications) |
+| Cloudflare Worker (cf-push-relay) | Free tier: 100,000 requests/day |
+
+## Step-by-Step Setup
+
+### 1. Create Firebase Project
+
+1. Go to [Firebase Console](https://console.firebase.google.com)
+2. Sign in with your Google Account
+3. Click **"Add project"**
+4. Enter a project name (e.g. `Aptove Push Notifications`) — the project ID is auto-generated
+5. (Optional) Disable Google Analytics if not needed
+6. Click **"Continue"** → **"Create project"**
+
+### 2. Add Android App to Firebase
+
+1. In your new project, click the **Android icon** (or **"Add app"** → **Android**)
+2. Register the app:
+   - **Android package name**: `com.acp.chat` (must match `applicationId` in `build.gradle.kts`)
+   - **App nickname** (optional): `ACP Chat`
+3. Click **"Register app"**
+
+### 3. Download google-services.json
+
+1. Click **"Download google-services.json"**
+2. Place it in the Android project:
+   ```bash
+   cp ~/Downloads/google-services.json android/app/google-services.json
+   ```
+3. Click **"Next"** → **"Continue to console"**
+
+### 4. Generate Service Account Key
+
+1. In Firebase Console, click **⚙️ Project Settings** (gear icon, top-left)
+2. Go to the **"Service Accounts"** tab
+3. Select **"Firebase Admin SDK"**
+4. Click **"Generate new private key"** → **"Generate key"**
+5. A JSON file downloads (e.g. `aptove-push-notifications-abc123-firebase-adminsdk-xxxxx.json`)
+
+Keep this file secure — it contains your service account credentials.
+
+### 5. Extract Credentials from JSON
+
+Open the downloaded JSON file:
+
+```json
+{
+  "type": "service_account",
+  "project_id": "aptove-push-notifications-abc123",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBA...\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-xxxxx@aptove-push-notifications-abc123.iam.gserviceaccount.com",
+  ...
+}
+```
+
+You need three values:
+1. `project_id` — e.g. `aptove-push-notifications-abc123`
+2. `private_key` — the entire RSA key block including `-----BEGIN/END PRIVATE KEY-----`
+3. `client_email` — e.g. `firebase-adminsdk-xxxxx@project.iam.gserviceaccount.com`
+
+### 6. Configure Cloudflare Worker Secrets
+
+```bash
+cd cf-push-relay
+
+# Paste the ENTIRE private_key value (including BEGIN/END lines)
+npx wrangler secret put FCM_PRIVATE_KEY
+
+# Paste the client_email value
+npx wrangler secret put FCM_CLIENT_EMAIL
+```
+
+### 7. Configure Worker Variables
+
+Update `wrangler.toml`:
+
+```toml
+[vars]
+FCM_PROJECT_ID = "aptove-push-notifications-abc123"  # Your project_id from JSON
+```
+
+### 8. Deploy
+
+```bash
+npm run deploy
+```
+
+Verify:
+```bash
+curl https://push.aptove.com/health
+```
+
+## Verify Android App Configuration
+
+### build.gradle.kts
+
+Ensure Firebase dependencies are present:
+
+```kotlin
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+}
+```
+
+And the plugin:
+```kotlin
+plugins {
+    id("com.google.gms.google-services")
+}
+```
+
+## Security Best Practices
+
+**Do:**
+- Store the JSON file in a password manager or encrypted storage
+- Use Cloudflare secrets — never commit to git
+- Add `*-firebase-adminsdk-*.json` to `.gitignore`
+
+**Don't:**
+- Commit the JSON file to version control
+- Share via email or Slack
+- Upload to public repositories
+
+## Key Rotation
+
+If your service account key is compromised:
+
+1. Firebase Console → **Project Settings** → **Service Accounts**
+2. Click **"Manage service account permissions"** (opens Google Cloud Console)
+3. Find your service account → **Keys** tab
+4. Delete the compromised key and create a new one
+5. Update Cloudflare secrets: `npx wrangler secret put FCM_PRIVATE_KEY` and `npx wrangler secret put FCM_CLIENT_EMAIL`
+
+## Testing
+
+```bash
+# 1. Get a JWT from cf-token
+TOKEN=$(curl -s -X POST https://token.aptove.com/token \
+  -H "Content-Type: application/json" \
+  -d '{"client_id":"bridge-home","client_secret":"<secret>"}' \
+  | jq -r .access_token)
+
+# 2. Register an Android device token
+curl -X POST https://push.aptove.com/register \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "device_token": "YOUR_FCM_DEVICE_TOKEN",
+    "platform": "android",
+    "bundle_id": "com.acp.chat"
+  }'
+
+# 3. Send a test push notification
+curl -X POST https://push.aptove.com/push \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test","body":"Hello from FCM!"}'
+```
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|-------------|-----|
+| "Authentication error" from FCM | Invalid private key or client email | Re-download service account JSON and re-paste credentials |
+| "Project not found" | Wrong `project_id` or project doesn't exist | Verify `FCM_PROJECT_ID` matches the `project_id` in your JSON |
+| "Invalid registration token" | Device token is invalid or expired | App should request a new token and re-register |
+| `google-services.json` errors in Android build | File missing or package name mismatch | Verify file is at `android/app/google-services.json` and package name is `com.acp.chat` |
+| Notifications not received | Multiple possible causes | Check `npx wrangler tail` logs; verify `google-services.json` package name; check device token is current |
+
+## Comparison: APNs vs FCM
+
+| Feature | APNs (iOS) | FCM (Android) |
+|---------|-----------|---------------|
+| Cost | $99/year developer account | Free |
+| Authentication | JWT (ES256) | OAuth2 |
+| Credentials | `.p8` key file | JSON service account |
+| Sandbox mode | Yes | No (uses package signature) |
+
+## Resources
+
+- [Firebase Console](https://console.firebase.google.com)
+- [FCM Documentation](https://firebase.google.com/docs/cloud-messaging)
+- [Android FCM Setup](https://firebase.google.com/docs/cloud-messaging/android/client)
+- [FCM HTTP v1 API](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages)

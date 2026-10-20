@@ -59,7 +59,9 @@
         "push-server/architecture",
         "push-server/deploy",
         "push-server/cf-token",
-        "push-server/cf-push-relay"
+        "push-server/cf-push-relay",
+        "push-server/firebase-fcm-setup",
+        "push-server/apple-apns-setup"
       ]
     }
   ],
