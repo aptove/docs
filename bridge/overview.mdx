@@ -18,12 +18,9 @@ The bridge is a small, self-contained binary that runs on any machine where your
 │                  aptove-bridge                   │
 │                                                  │
 │   WebSocket server ◄──── Transport layer         │
-│          │                (local / CF / TS)      │
+│          │                (local / Tailscale)    │
 │          ▼                                       │
 │     Agent process (stdio ACP)                    │
-│          │                                       │
-│          ▼                                       │
-│     Push relay client ──► cf-push-relay          │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -47,7 +44,7 @@ cargo build --release
 Running `bridge` with no arguments starts the interactive TUI. On first launch, the setup wizard appears and walks you through:
 
 1. Choosing an agent command (e.g. `copilot --acp`)
-2. Picking a transport (local, Cloudflare, or Tailscale)
+2. Picking a transport (local or Tailscale)
 3. Configuring any transport-specific credentials
 
 After setup, the bridge starts and immediately shows a QR code for pairing your phone.

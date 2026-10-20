@@ -3,7 +3,7 @@ title: "Local Transport"
 description: "Connect the Aptove app to the bridge over your local network using TLS-pinned WebSockets."
 ---
 
-The local transport enables secure connections between client apps (iOS, Android, desktop) and the bridge running on the same local network. This is ideal for development, local-first deployments, and scenarios where Cloudflare tunnels or Tailscale aren't needed.
+The local transport enables secure connections between client apps (iOS, Android, desktop) and the bridge running on the same local network. This is ideal for development, local-first deployments, and scenarios where Tailscale isn't available.
 
 ## Overview
 
@@ -296,10 +296,10 @@ curl -k "https://192.168.1.100:8765/pair/local?code=847291"
 
 ## Comparison with Other Transports
 
-| Feature | Local | Cloudflare | Tailscale |
-|---------|-------|------------|-----------|
-| Internet access | No — same network only | Yes — anywhere | Yes — tailnet |
-| Setup complexity | None | One-time account setup | Tailscale required |
-| Latency | Minimal | Tunnel overhead | Minimal (direct) |
-| TLS certificate | Self-signed (pinned) | Cloudflare managed | Tailscale managed (serve) / self-signed (ip) |
-| Best for | Development, LAN | Production, remote | Team / personal mesh |
+| Feature | Local | Tailscale |
+|---------|-------|-----------|
+| Internet access | No — same network only | Yes — tailnet |
+| Setup complexity | None | Tailscale required |
+| Latency | Minimal | Minimal (direct) |
+| TLS certificate | Self-signed (pinned) | Tailscale managed (serve) / self-signed (ip) |
+| Best for | Development, LAN | Team / personal mesh |

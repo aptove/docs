@@ -28,14 +28,6 @@ Type `/` in the chat input to open the command picker. Commands are provided by 
 | Simple command | Sends `/command` immediately |
 | Command with input | Opens an additional text field; sends `/command <your text>` |
 
-## Push notifications
-
-When the Aptove app is in the background and the agent produces new output, the bridge sends a push notification through the push relay. Tapping the notification opens the relevant agent's chat directly.
-
-- Notifications are debounced: at most one notification per 30 seconds per agent to avoid flooding
-- Notification content is fixed ("Your agent has new activity") — agent response text is never sent through the push relay for privacy
-- Push requires the bridge to have a `[push_relay]` section configured in `common.toml`
-
 ## Agent list
 
 The home screen shows all paired agents with their connection status:
@@ -52,6 +44,5 @@ Tap an agent to open the chat. Long-press for options: **Edit**, **Reconnect**, 
 
 Access settings from the gear icon on the home screen:
 
-- **Notifications** — enable or disable push notifications per agent
 - **Appearance** — light / dark / system theme
 - **Agent configuration** — edit the name and icon for any paired agent

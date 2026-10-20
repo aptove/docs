@@ -7,15 +7,12 @@ description: "Aptove lets you chat with any ACP-compatible AI agent from your iO
 
 Aptove is an open-source mobile client for AI agents built on the [Agent Client Protocol (ACP)](https://github.com/agent-client-protocol). It consists of three main components:
 
-<CardGroup cols={3}>
+<CardGroup cols={2}>
   <Card title="Bridge" icon="bridge" href="/bridge/overview">
     A local Rust binary that runs on your machine and exposes any ACP-compatible agent over WebSocket. Supports multiple transports so you can connect from anywhere.
   </Card>
   <Card title="Mobile App" icon="mobile" href="/mobile-app/overview">
-    Native iOS and Android apps that connect to the bridge, let you chat with agents, and receive push notifications when your agent has new activity.
-  </Card>
-  <Card title="Push Server" icon="bell" href="/push-server/overview">
-    A pair of Cloudflare Workers that handle push notifications to iOS (APNs) and Android (FCM) without exposing platform credentials to the bridge.
+    Native iOS and Android apps that connect to the bridge and let you chat with agents from your phone.
   </Card>
 </CardGroup>
 
@@ -23,16 +20,12 @@ Aptove is an open-source mobile client for AI agents built on the [Agent Client 
 
 ```
 Mobile App  ──[transport]──  Bridge  ──[stdio]──  AI Agent
-                                │
-                         Push Server
-                          (APNs / FCM)
 ```
 
 1. You run the **bridge** on the same machine as your AI agent.
 2. You scan a QR code in the bridge TUI to pair your phone.
-3. The **mobile app** opens a WebSocket connection through whichever transport you chose (local, Cloudflare, or Tailscale).
+3. The **mobile app** opens a WebSocket connection through whichever transport you chose (local or Tailscale).
 4. Messages flow bidirectionally over ACP — the bridge pipes them to your agent's stdin/stdout.
-5. When the agent responds while your phone is in the background, the bridge triggers a push notification via the **push server**.
 
 ## Quickstart
 

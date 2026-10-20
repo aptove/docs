@@ -34,9 +34,8 @@ https://<host>:<port>/pair/<transport>?code=<6-digit>&fp=<cert-fingerprint>
 
 | Component | Description |
 |-----------|-------------|
-| `host:port` | Bridge address (LAN IP for local, public hostname for Cloudflare/Tailscale) |
+| `host:port` | Bridge address (LAN IP for local, public hostname for Tailscale) |
 | `/pair/local` | Local transport — self-signed TLS, certificate fingerprint pinned |
-| `/pair/cloudflare` | Cloudflare transport — returns Cloudflare Access service token credentials |
 | `/pair/tailscale` | Tailscale transport — standard TLS via Tailscale Serve |
 | `code` | 6-digit one-time code (expires after use) |
 | `fp` | SHA-256 certificate fingerprint (local transport only) |
@@ -60,8 +59,6 @@ After pairing, the app stores the following in the system Keychain, keyed by the
 - WebSocket URL
 - Bearer auth token
 - Certificate fingerprint (local transport)
-- Cloudflare Access client ID and secret (Cloudflare transport)
-- Push relay URL (if the bridge has push configured)
 
 Credentials are never stored in plain text or synced to iCloud.
 

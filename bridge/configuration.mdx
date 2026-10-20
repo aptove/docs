@@ -42,16 +42,6 @@ enabled = true
 port = 8765   # WebSocket port
 tls = true    # Self-signed TLS; the app pins the certificate fingerprint
 
-[transports.cloudflare]
-enabled = false
-hostname = "https://your-tunnel.example.com"
-tunnel_id = "your-tunnel-uuid"
-tunnel_secret = "your-tunnel-credential-secret"
-account_id = "your-cf-account-id"
-# Cloudflare Access service token (optional — gates the tunnel endpoint)
-client_id = "your-cf-access-client-id"
-client_secret = "your-cf-access-client-secret"
-
 [transports.tailscale-serve]
 enabled = false
 port = 8766
@@ -68,14 +58,6 @@ name = "explain"
 description = "Explain the code"
 input_hint = "what to focus on"   # Shows a text input in the app
 
-# ── Push Relay ────────────────────────────────────────────────────────────────
-# Push notifications are disabled when this section is absent.
-
-[push_relay]
-url = "https://push.aptove.com"
-token_url = "https://token.aptove.com"
-client_id = "your-push-client-id"
-client_secret = "your-push-client-secret"
 ```
 
 ## Field reference
@@ -99,12 +81,6 @@ client_secret = "your-push-client-secret"
 | `enabled` | bool | Whether this transport is active. |
 | `port` | integer | TCP port for the WebSocket server. Defaults to `8765` (local) or `8766` (tailscale-serve). |
 | `tls` | bool | Enable TLS. Defaults to `true` for local transport. |
-| `hostname` | string | *(Cloudflare only)* Public tunnel hostname, e.g. `https://agent.example.com`. |
-| `tunnel_id` | string | *(Cloudflare only)* Cloudflare tunnel UUID. |
-| `tunnel_secret` | string | *(Cloudflare only)* Tunnel credential secret. |
-| `account_id` | string | *(Cloudflare only)* Cloudflare account ID. |
-| `client_id` | string | *(Cloudflare only)* Cloudflare Access service token client ID. |
-| `client_secret` | string | *(Cloudflare only)* Cloudflare Access service token client secret. |
 
 ### `[[slash_commands]]`
 
@@ -114,15 +90,3 @@ client_secret = "your-push-client-secret"
 | `description` | string | Human-readable description shown in the app's command picker. |
 | `input_hint` | string | *(optional)* If set, the command accepts free text. This string is shown as the input placeholder. |
 
-### `[push_relay]`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `url` | string | Base URL of the push relay service. |
-| `token_url` | string | Base URL of the JWT token service. |
-| `client_id` | string | OAuth2 client ID issued by the token service. |
-| `client_secret` | string | OAuth2 client secret issued by the token service. |
-
-<Note>
-Push notifications are silently disabled if `[push_relay]` is absent or any field is empty.
-</Note>
