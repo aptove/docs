@@ -117,32 +117,60 @@ Revoke a client. Any JWTs already issued for this client will still be valid unt
 
 ## Environment variables
 
-| Variable | Description |
-|----------|-------------|
-| `SIGNING_PRIVATE_KEY` | RS256 private key in PKCS#8 PEM format, stored as a Cloudflare secret |
-| `SIGNING_KEY_ID` | Key ID included in JWTs and JWKS (`kid` claim) |
-| `TOKEN_ISSUER` | `iss` claim in issued JWTs (e.g. `"https://token.aptove.com"`) |
-| `TOKEN_AUDIENCE` | `aud` claim in issued JWTs (e.g. `"https://push.aptove.com"`) |
-| `ADMIN_CLIENT_ID` | Built-in admin client ID |
-| `ADMIN_CLIENT_SECRET` | Built-in admin client secret (timing-safe comparison) |
-| `CLIENT_REGISTRY` | KV namespace binding for storing client records |
+| Variable | Where set | Description |
+|----------|-----------|-------------|
+| `RS_PRIVATE_KEY` | `wrangler secret` | RS256 private key in PKCS#8 PEM format |
+| `ADMIN_CLIENT_SECRET` | `wrangler secret` | Secret for the built-in admin client |
+| `TOKEN_ISSUER` | `wrangler.toml` `[vars]` | `iss` claim in issued JWTs (e.g. `"https://token.aptove.com"`) |
+| `TOKEN_AUDIENCE` | `wrangler.toml` `[vars]` | `aud` claim in issued JWTs (e.g. `"https://push.aptove.com"`) |
+| `ADMIN_CLIENT_ID` | `wrangler.toml` `[vars]` | Built-in admin client ID — change from `"admin"` before deploying |
+| `CLIENT_REGISTRY` | `wrangler.toml` `[[kv_namespaces]]` | KV namespace binding for storing client records |
 
 ## KV storage
 
-Client records are stored in the `CLIENT_REGISTRY` KV namespace. Each key is the `client_id`; the value is a JSON object with a bcrypt-hashed secret and scope:
+Client records are stored in the `CLIENT_REGISTRY` KV namespace. Each key is the `client_id`; the value is a JSON object with a PBKDF2-SHA256 hashed secret and scope:
 
 ```json
 {
-  "secret_hash": "$2b$10$...",
+  "hashed_secret": "<base64 PBKDF2-SHA256 output>",
   "scope": "push:write"
 }
 ```
 
 ## Deployment
 
+### Manual
+
 ```bash
 cd cf-token
-wrangler deploy
-wrangler secret put SIGNING_PRIVATE_KEY
-wrangler secret put ADMIN_CLIENT_SECRET
+npm ci
+npx wrangler deploy
+npx wrangler secret put RS_PRIVATE_KEY       # paste PEM from scripts/generate-keys.mjs
+npx wrangler secret put ADMIN_CLIENT_SECRET  # openssl rand -hex 32
 ```
+
+### Automated (GitHub Actions)
+
+The repository has a `.github/workflows/deploy.yml` that deploys on every version tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow runs `npm run typecheck`, `npm test`, then deploys. Configure two GitHub Actions secrets:
+
+| Secret | Value |
+|--------|-------|
+| `CLOUDFLARE_API_TOKEN` | API token with Edit Workers permission |
+| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+
+## Key rotation
+
+To rotate the RS256 signing key:
+
+1. Generate a new key pair: `node scripts/generate-keys.mjs`
+2. Update the secret: `npx wrangler secret put RS_PRIVATE_KEY`
+3. Deploy: `npx wrangler deploy` (or push a tag for CI)
+
+After rotation, the JWKS `kid` changes. Any JWTs issued with the old key will fail verification. `cf-push-relay` detects the unknown `kid`, invalidates its JWKS cache, and re-fetches automatically. The bridge re-fetches a new JWT on the next push request.
