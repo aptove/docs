@@ -1,0 +1,172 @@
+---
+title: "Apple APNs Setup"
+description: "Obtain APNs credentials and configure cf-push-relay to send push notifications to iOS devices."
+---
+
+APNs uses token-based authentication with ES256 (ECDSA with P-256 curve) signing. You'll need:
+- **Private Key** (`.p8` file) — used to sign JWT tokens
+- **Key ID** — 10-character identifier for your key
+- **Team ID** — 10-character identifier for your Apple Developer account
+
+## Cost
+
+| Item | Cost |
+|------|------|
+| Apple Developer Program | $99/year (required for APNs) |
+| APNs API usage | Free (unlimited) |
+
+## Step-by-Step Setup
+
+### 1. Sign in to Apple Developer Portal
+
+Go to [https://developer.apple.com/account](https://developer.apple.com/account) and sign in.
+
+### 2. Create an APNs Key
+
+1. Click **Certificates, Identifiers & Profiles** → **Keys**
+2. Click **+** (Create a key)
+3. **Key Name**: e.g. `Aptove Push Notifications Key`
+4. **Key Services**: check **Apple Push Notifications service (APNs)**
+5. Click **Continue** → **Register**
+
+### 3. Download the Key
+
+You can only download the `.p8` file **once**. Store it securely.
+
+1. Click **Download** — the file is named `AuthKey_XXXXXXXXXX.p8` (X's are your Key ID)
+2. Note the **Key ID** shown on the download page (10 characters, e.g. `52ZW4GTM93`)
+
+### 4. Note Your Team ID
+
+Find your **Team ID** at the top-right of the developer portal (or in the **Membership** section). Format: `XYZ9876543` (10 characters).
+
+### 5. Enable Push Notifications for Your App
+
+1. **Identifiers** → select your app identifier (e.g. `com.aptove.ios`)
+2. Check **Push Notifications** → **Save**
+
+> You don't need certificates when using token-based authentication (`.p8` keys). One key works for all your apps.
+
+## Extract Key Contents
+
+Open the `.p8` file in a text editor:
+
+```
+-----BEGIN PRIVATE KEY-----
+MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu/Mo5RFoqG4ALHPV
+...
+-----END PRIVATE KEY-----
+```
+
+Copy the **entire contents** including the `-----BEGIN/END PRIVATE KEY-----` lines.
+
+## Configure Cloudflare Worker Secrets
+
+```bash
+cd cf-push-relay
+
+# Paste entire .p8 file contents (including BEGIN/END lines)
+npx wrangler secret put APNS_PRIVATE_KEY
+
+# Enter 10-character Key ID
+npx wrangler secret put APNS_KEY_ID
+
+# Enter 10-character Team ID
+npx wrangler secret put APNS_TEAM_ID
+```
+
+## Configure Worker Variables
+
+Update `wrangler.toml`:
+
+```toml
+[vars]
+APNS_BUNDLE_ID = "com.aptove.ios"  # Your iOS app's bundle identifier
+APNS_SANDBOX   = "false"           # "true" for development, "false" for production
+```
+
+### Sandbox vs Production
+
+| Mode | Use Case | APNs endpoint |
+|------|----------|--------------|
+| `"true"` (Sandbox) | Development builds, Xcode debug | `api.sandbox.push.apple.com` |
+| `"false"` (Production) | TestFlight, App Store, enterprise | `api.push.apple.com` |
+
+If notifications aren't working, try switching between sandbox and production modes.
+
+## Deploy
+
+```bash
+npm run deploy
+```
+
+Verify:
+```bash
+curl https://push.aptove.com/health
+```
+
+## Security Best Practices
+
+**Do:**
+- Store the `.p8` file in a password manager or encrypted storage
+- Use Cloudflare secrets — never commit to git
+- One key can be used for all your apps
+
+**Don't:**
+- Commit the `.p8` file to version control
+- Share via email or Slack
+
+### Key Rotation
+
+APNs keys don't expire, but you can rotate them:
+1. Create a new key in Apple Developer Portal
+2. Update Cloudflare secrets with the new key's contents, Key ID, and Team ID
+3. Maximum 2 active keys per team — delete the old key once the new one is confirmed working
+
+### Revocation
+
+If your key is compromised:
+1. Apple Developer Portal → **Keys** → select the key → **Revoke**
+2. Create a new key immediately and update Cloudflare secrets
+
+## Testing
+
+```bash
+# 1. Get a JWT from cf-token
+TOKEN=$(curl -s -X POST https://token.aptove.com/token \
+  -H "Content-Type: application/json" \
+  -d '{"client_id":"bridge-home","client_secret":"<secret>"}' \
+  | jq -r .access_token)
+
+# 2. Register an iOS device token
+curl -X POST https://push.aptove.com/register \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "device_token": "YOUR_APNS_DEVICE_TOKEN",
+    "platform": "ios",
+    "bundle_id": "com.aptove.ios"
+  }'
+
+# 3. Send a test push notification
+curl -X POST https://push.aptove.com/push \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test","body":"Hello from APNs!"}'
+```
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|-------------|-----|
+| "Authentication error" from APNs | Invalid Key ID, Team ID, or malformed private key | Verify all three values; ensure `.p8` contents are complete |
+| "Invalid token" from APNs | JWT signing issue or expired token | Check private key is properly formatted |
+| "Missing topic" error | `APNS_BUNDLE_ID` not configured | Set your iOS bundle identifier in `wrangler.toml` |
+| "BadDeviceToken" error | Using production endpoint with sandbox token (or vice versa) | Switch `APNS_SANDBOX` and redeploy |
+| Notifications not delivered | Multiple causes | Check `npx wrangler tail`; verify bundle ID, sandbox/production mode, and that device token is current |
+
+## Resources
+
+- [APNs Documentation](https://developer.apple.com/documentation/usernotifications)
+- [Token-Based Connection to APNs](https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns)
+- [APNs Provider API](https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/sending_notification_requests_to_apns)
