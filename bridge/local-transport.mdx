@@ -34,9 +34,7 @@ port    = 8765    # default: 8765
 tls     = true    # default: true
 ```
 
-**Config file location:**
-- macOS: `~/Library/Application Support/com.aptove.bridge/common.toml`
-- Linux: `~/.config/bridge/common.toml`
+**Config file location:** `.aptove-bridge/common.toml` in the directory where you run `bridge`.
 
 ### Additional config fields
 
@@ -101,8 +99,7 @@ container run -p 8765:8765 \
 > **Important:** If you add `advertise_addr` for the first time (or change the IP), the existing TLS certificate is regenerated because the SANs changed. You will need to delete the old cert files and re-pair the mobile app:
 >
 > ```bash
-> rm ~/Library/Application\ Support/com.aptove.bridge/cert.pem
-> rm ~/Library/Application\ Support/com.aptove.bridge/key.pem
+> rm .aptove-bridge/cert.pem .aptove-bridge/key.pem
 > ```
 
 ---
@@ -227,24 +224,13 @@ The current extra SANs are persisted in `cert-extra-sans.json` so the bridge can
 **Rotate TLS certificate only** (invalidates all paired devices — they must re-scan):
 
 ```bash
-# macOS
-rm ~/Library/Application\ Support/com.aptove.bridge/cert.pem \
-   ~/Library/Application\ Support/com.aptove.bridge/key.pem
-
-# Linux
-rm ~/.config/bridge/cert.pem ~/.config/bridge/key.pem
+rm .aptove-bridge/cert.pem .aptove-bridge/key.pem
 ```
 
 **Full reset** (regenerates cert, auth token, and agent ID):
 
 ```bash
-# macOS
-rm ~/Library/Application\ Support/com.aptove.bridge/cert.pem \
-   ~/Library/Application\ Support/com.aptove.bridge/key.pem \
-   ~/Library/Application\ Support/com.aptove.bridge/common.toml
-
-# Linux
-rm ~/.config/bridge/cert.pem ~/.config/bridge/key.pem ~/.config/bridge/common.toml
+rm .aptove-bridge/cert.pem .aptove-bridge/key.pem .aptove-bridge/common.toml
 ```
 
 Then re-run `bridge`.
