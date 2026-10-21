@@ -109,7 +109,7 @@ No relay_token is in any request body. No shared secret is passed over the wire 
 
 ### 3. Bridge (this crate)
 - Reads `[push_relay]` config from `.aptove-bridge/common.toml`
-- Fetches a JWT from cf-token on first push request; caches it until <60s remain
+- Fetches a JWT from cf-token on first push request; caches it until `<60s` remain
 - Intercepts `bridge/registerPushToken` WebSocket notifications from mobile apps
 - Forwards device token registration to cf-push-relay using its JWT
 - Sends push notifications when agents produce output with no connected client
