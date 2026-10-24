@@ -1,0 +1,71 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Aptove",
+  "logo": {
+    "dark": "/logo.png",
+    "light": "/logo.png"
+  },
+  "favicon": "/logo.png",
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": true
+  },
+  "colors": {
+    "primary": "#6366f1",
+    "light": "#818cf8",
+    "dark": "#4f46e5"
+  },
+  "topbarLinks": [
+    {
+      "name": "aptove.com",
+      "url": "https://aptove.com"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "GitHub",
+    "url": "https://github.com/aptove"
+  },
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": ["introduction", "packing/install"]
+    },
+    {
+      "group": "Bridge",
+      "pages": [
+        "bridge/overview",
+        "bridge/configuration",
+        "bridge/transports",
+        "bridge/local-transport",
+        "bridge/tailscale-transport",
+        "bridge/sessions",
+        "bridge/slash-commands",
+        "bridge/tui"
+      ]
+    },
+    {
+      "group": "Mobile App",
+      "pages": [
+        "mobile-app/overview",
+        "mobile-app/pairing",
+        "mobile-app/features"
+      ]
+    },
+    {
+      "group": "Push Notifications",
+      "pages": [
+        "push-server/overview",
+        "push-server/architecture",
+        "push-server/cf-push-relay",
+        "push-server/cf-token",
+        "push-server/deploy",
+        "push-server/apple-apns-setup",
+        "push-server/firebase-fcm-setup"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/aptove",
+    "discord": "https://discord.gg/gD7AMxBy9y"
+  }
+}
