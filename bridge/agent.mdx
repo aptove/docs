@@ -95,22 +95,30 @@ my-agent --acp --model gpt-4
 
 ## How the connection test works
 
-After you enter a command, the bridge sends a `session/new` request to the agent and displays the response:
+After you enter a command, the bridge performs a full ACP handshake and sends a test prompt. The steps are:
 
-**Sent:**
-```json
-{"jsonrpc":"2.0","id":"aptove-test","method":"session/new","params":{}}
-```
+1. **`initialize`** — negotiates the protocol version
+2. **`session/new`** — creates a session and retrieves a `sessionId`
+3. **`session/prompt`** — sends _"Hello, what is your name?"_ and waits for the agent's reply via `session/update` notifications
 
-**Expected response (success):**
+**Sent (session/prompt):**
 ```json
 {
   "jsonrpc": "2.0",
-  "id": "aptove-test",
-  "result": {
-    "sessionId": "..."
+  "id": "aptove-prompt",
+  "method": "session/prompt",
+  "params": {
+    "sessionId": "<session-id from step 2>",
+    "prompt": [{"type": "text", "text": "Hello, what is your name?"}]
   }
 }
+```
+
+**Expected received (success):**
+
+The bridge displays the agent's text reply, for example:
+```
+Hi! I'm Claude, an AI assistant made by Anthropic...
 ```
 
 If the agent responds correctly, press **Enter** to continue to transport setup. If you see an error, check that the agent is installed and the command is correct.
@@ -122,6 +130,6 @@ If the agent responds correctly, press **Enter** to continue to transport setup.
 | Problem | Fix |
 |---------|-----|
 | `Failed to start 'copilot --acp'` | Agent is not installed or not on `$PATH` |
-| `Timeout: no response within 8 seconds` | Agent started but does not speak ACP — check the command and version |
+| `Timeout: no response within 10 seconds` | Agent started but does not speak ACP — check the command and version |
 | `Agent closed stdout without responding` | Agent exited immediately — run the command manually in a terminal to see the error output |
 | Response is not valid JSON | Agent is not in ACP mode — add the required flag (e.g. `--acp`) |
