@@ -39,8 +39,8 @@
           {
             "group": "Bridge",
             "pages": [
-              "bridge/install",
               "bridge/overview",
+              "bridge/install",
               "bridge/configuration",
               {
                 "group": "Transports",
