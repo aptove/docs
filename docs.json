@@ -41,9 +41,14 @@
             "pages": [
               "bridge/overview",
               "bridge/configuration",
-              "bridge/transports",
-              "bridge/local-transport",
-              "bridge/tailscale-transport",
+              {
+                "group": "Transports",
+                "pages": [
+                  "bridge/transports",
+                  "bridge/local-transport",
+                  "bridge/tailscale-transport"
+                ]
+              },
               "bridge/sessions",
               "bridge/slash-commands",
               "bridge/tui"
