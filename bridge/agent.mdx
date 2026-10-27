@@ -1,0 +1,96 @@
+---
+title: "Agent Setup"
+description: "How to configure an ACP-compatible AI agent for use with Aptove Bridge."
+---
+
+## What to enter
+
+When the bridge asks for an agent command, enter the shell command that starts your AI agent. The command must launch a process that speaks the [Agent Client Protocol](https://agentclientprotocol.com) over **stdio** (stdin / stdout).
+
+The bridge will spawn this command as a subprocess and relay messages between it and the Aptove mobile app.
+
+---
+
+## Available agents
+
+### GitHub Copilot
+
+Requires the [GitHub Copilot CLI extension](https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line).
+
+```
+copilot --acp
+```
+
+### Google Gemini
+
+Requires the [Gemini CLI](https://github.com/google-gemini/gemini-cli).
+
+```
+gemini --experimental-acp
+```
+
+### Goose AI
+
+Requires [Goose](https://github.com/block/goose).
+
+```
+goose acp
+```
+
+### Claude (via claude-agent-acp)
+
+Requires Node.js. Runs the ACP wrapper for Claude.
+
+```
+npx @agentclientprotocol/claude-agent-acp
+```
+
+Or install globally first:
+
+```bash
+npm install -g @agentclientprotocol/claude-agent-acp
+claude-agent-acp
+```
+
+### Custom / other agents
+
+Any process that implements the ACP stdio protocol can be used. Enter the full shell command including arguments:
+
+```
+my-agent --acp --model gpt-4
+```
+
+---
+
+## How the connection test works
+
+After you enter a command, the bridge sends a `session/new` request to the agent and displays the response:
+
+**Sent:**
+```json
+{"jsonrpc":"2.0","id":"aptove-test","method":"session/new","params":{}}
+```
+
+**Expected response (success):**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "aptove-test",
+  "result": {
+    "sessionId": "..."
+  }
+}
+```
+
+If the agent responds correctly, press **Enter** to continue to transport setup. If you see an error, check that the agent is installed and the command is correct.
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `Failed to start 'copilot --acp'` | Agent is not installed or not on `$PATH` |
+| `Timeout: no response within 8 seconds` | Agent started but does not speak ACP — check the command and version |
+| `Agent closed stdout without responding` | Agent exited immediately — run the command manually in a terminal to see the error output |
+| Response is not valid JSON | Agent is not in ACP mode — add the required flag (e.g. `--acp`) |

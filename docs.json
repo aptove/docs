@@ -41,6 +41,7 @@
             "pages": [
               "bridge/overview",
               "bridge/install",
+              "bridge/agent",
               "bridge/configuration",
               {
                 "group": "Transports",
