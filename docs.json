@@ -34,11 +34,12 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["introduction", "packing/install"]
+            "pages": ["introduction"]
           },
           {
             "group": "Bridge",
             "pages": [
+              "bridge/install",
               "bridge/overview",
               "bridge/configuration",
               {
