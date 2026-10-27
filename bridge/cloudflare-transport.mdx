@@ -50,7 +50,7 @@ This guide covers configuring the bridge to accept connections from iOS and Andr
 
 ## One-Time Setup
 
-Run `bridge setup` to launch the Cloudflare setup wizard. It prompts for four values:
+Run `bridge` to launch the TUI. The setup wizard runs automatically on first launch (or whenever the Cloudflare transport is not yet configured). It prompts for four values:
 
 | Field | Description | Example |
 |-------|-------------|---------|
@@ -118,7 +118,7 @@ Cloudflare has an additional constraint: **a DNS CNAME record can only point to 
 | `~/code/project-a` | `project-a` | `https://project-a.example.com` |
 | `~/code/project-b` | `project-b` | `https://project-b.example.com` |
 
-Run `bridge setup` once in each folder and enter a unique subdomain when prompted.
+Run `bridge` once in each folder — the setup wizard will prompt for a unique subdomain.
 
 Each setup creates a separate Cloudflare tunnel, DNS record, and Access Application. The two bridges then run completely independently and appear as separate agents in the mobile app.
 
@@ -174,11 +174,11 @@ After scanning the QR code, the app stores in the iOS Keychain / Android Encrypt
 
 ## Forcing Re-Setup
 
-To reprovision all Cloudflare infrastructure from scratch, delete the Cloudflare section from `.aptove-bridge/common.toml` (or delete the file entirely), then run `bridge setup` again:
+To reprovision all Cloudflare infrastructure from scratch, delete the Cloudflare section from `.aptove-bridge/common.toml` (or delete the file entirely), then run `bridge` again — the setup wizard will detect missing config and re-run:
 
 ```bash
 rm .aptove-bridge/common.toml
-bridge setup
+bridge
 ```
 
 ---
@@ -202,7 +202,7 @@ bridge setup
 | App connects but times out | Wrong port in ingress rule | Re-run `bridge` — the port in `.aptove-bridge/cloudflared.yml` is rewritten automatically on every startup |
 | "403 Forbidden" from mobile | Missing `CF-Access-Client-Id`/`CF-Access-Client-Secret` headers | Re-scan the QR code |
 | `Another bridge instance is already running from this folder` | A bridge is already running in this project folder | Stop the existing bridge first; only one instance per folder is allowed |
-| Second bridge cannot connect via Cloudflare | Both bridges share the same subdomain | Run `bridge setup` in each folder with a unique subdomain; see [Running Multiple Bridges](#running-multiple-bridges-simultaneously) |
+| Second bridge cannot connect via Cloudflare | Both bridges share the same subdomain | Run `bridge` in each folder with a unique subdomain configured in the wizard; see [Running Multiple Bridges](#running-multiple-bridges-simultaneously) |
 
 ---
 
@@ -211,7 +211,7 @@ bridge setup
 | Feature | Local | Cloudflare | Tailscale |
 |---------|-------|------------|-----------|
 | Internet access | No — same network only | Yes — anywhere | Yes — tailnet |
-| First-run setup | None | `bridge setup` (once) | Tailscale must be installed |
+| First-run setup | None | TUI wizard (once) | Tailscale must be installed |
 | External account | Not needed | Cloudflare (free OK) | Tailscale (free OK) |
 | TLS certificate | Self-signed (pinned) | Cloudflare managed | Tailscale managed (serve) / self-signed (ip) |
 | Auth layers | Bridge token | Cloudflare Access + Bridge token | Bridge token |
