@@ -43,8 +43,8 @@
               "bridge/configuration",
               {
                 "group": "Transports",
+                "page": "bridge/transports",
                 "pages": [
-                  "bridge/transports",
                   "bridge/local-transport",
                   "bridge/tailscale-transport"
                 ]
