@@ -21,6 +21,14 @@ Requires the [GitHub Copilot CLI extension](https://docs.github.com/en/copilot/u
 copilot --acp
 ```
 
+#### Yolo mode
+
+Yolo mode skips confirmation prompts, letting Copilot execute tool calls automatically without asking each time.
+
+```
+copilot --acp --yolo
+```
+
 ### Google Gemini
 
 Requires the [Gemini CLI](https://github.com/google-gemini/gemini-cli).
@@ -37,6 +45,21 @@ Requires [Goose](https://github.com/block/goose).
 goose acp
 ```
 
+### OpenAI Codex (via codex-acp)
+
+Requires Node.js. Runs the ACP wrapper for OpenAI Codex CLI.
+
+```
+npx @agentclientprotocol/codex-acp
+```
+
+Or install globally first:
+
+```bash
+npm install -g @agentclientprotocol/codex-acp
+codex-acp
+```
+
 ### Claude (via claude-agent-acp)
 
 Requires Node.js. Runs the ACP wrapper for Claude.
@@ -50,6 +73,14 @@ Or install globally first:
 ```bash
 npm install -g @agentclientprotocol/claude-agent-acp
 claude-agent-acp
+```
+
+#### Yolo mode
+
+Yolo mode skips all permission prompts, letting Claude run shell commands and edit files without asking for confirmation. Use with caution.
+
+```
+npx @agentclientprotocol/claude-agent-acp --dangerously-skip-permissions
 ```
 
 ### Custom / other agents
