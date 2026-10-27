@@ -17,23 +17,6 @@ On Windows (PowerShell):
 powershell -ExecutionPolicy ByPass -c "irm https://github.com/aptove/bridge/releases/latest/download/aptove-bridge-installer.ps1 | iex"
 ```
 
-## npm
-
-An alternative if you already have [Node.js](https://nodejs.org) installed.
-
-Run directly without installing:
-
-```bash
-npx @aptove/bridge
-```
-
-Or install globally so `bridge` is available anywhere:
-
-```bash
-npm install -g @aptove/bridge
-bridge
-```
-
 ## Build from source
 
 If you have a [Rust toolchain](https://rustup.rs) installed:
@@ -49,8 +32,7 @@ Use this if you want to build a specific commit or develop against the bridge co
 
 ## Comparison
 
-| Method | Requires | Speed | Best for |
-|--------|----------|-------|----------|
-| Shell / PowerShell installer | Nothing extra | Fast | Most users |
-| npm / npx | Node.js | Fast (cached after first run) | Node.js users |
-| Build from source | Rust toolchain + git | ~2–5 min compile | Contributors / custom builds |
+| Method | Requires | Best for |
+|--------|----------|----------|
+| Shell / PowerShell installer | Nothing extra | Most users |
+| Build from source | Rust toolchain + git | Contributors / custom builds |
