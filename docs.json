@@ -4,7 +4,8 @@
   "name": "Aptove",
   "logo": {
     "dark": "/logo-dark.svg",
-    "light": "/logo-light.svg"
+    "light": "/logo-light.svg",
+    "href": "https://aptove.com"
   },
   "favicon": "/favicon.svg",
   "modeToggle": {
