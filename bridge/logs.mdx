@@ -1,0 +1,61 @@
+---
+title: "Log Files"
+description: "Where the bridge writes log files and how to configure their size and retention."
+---
+
+## File location
+
+The bridge writes all log output to files inside the `.aptove-bridge/logs/` directory, created automatically in the working directory where the bridge is launched:
+
+```
+.aptove-bridge/
+└── logs/
+    ├── bridge.log        ← current log file
+    ├── bridge.log.1      ← previous (most recent rotation)
+    ├── bridge.log.2
+    ├── bridge.log.3
+    └── bridge.log.4
+```
+
+`bridge.log` is always the active file. When it reaches the size limit it is rotated: each `.N` file shifts to `.N+1`, `bridge.log` becomes `bridge.log.1`, and a fresh `bridge.log` is opened. The oldest file is deleted to keep the total count within the configured limit.
+
+## Default settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `log_file_max_mb` | `10` | Maximum size of each log file in MB before rotation. |
+| `log_file_count` | `5` | Total number of files to keep (active + rotated). |
+
+With the defaults the bridge keeps at most **50 MB** of log history on disk (5 files × 10 MB each).
+
+## Configuring in common.toml
+
+Both settings live in the top-level section of `common.toml`:
+
+```toml
+# Maximum size of each log file in MB before rotation (default: 10).
+log_file_max_mb = 10
+
+# Number of files to keep, including the active log (default: 5).
+log_file_count  = 5
+```
+
+To keep more history, increase either value:
+
+```toml
+log_file_max_mb = 50   # 50 MB per file
+log_file_count  = 10   # keep 10 files → up to 500 MB total
+```
+
+To minimise disk usage:
+
+```toml
+log_file_max_mb = 5    # 5 MB per file
+log_file_count  = 2    # keep only current + 1 backup → up to 10 MB total
+```
+
+Changes take effect on the next bridge start.
+
+## Log level
+
+The files capture everything at **DEBUG** level and above (TRACE events are omitted to keep file sizes reasonable). The minimum level shown in the TUI is controlled separately by the `log_level` field — see [Configuration](/bridge/configuration).
