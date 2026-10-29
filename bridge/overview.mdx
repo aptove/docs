@@ -49,32 +49,37 @@ Running `bridge` with no arguments starts the interactive TUI. On first launch, 
 
 After setup, the bridge starts and immediately shows a QR code for pairing your phone.
 
-## Supported agents
+## Running from a folder
 
-The wizard offers a list of known agents. Select **Custom** to use any ACP-compatible agent not on the list.
-
-| # | Agent | Command |
-|---|-------|---------|
-| 1 | GitHub Copilot | `copilot --acp` |
-| 2 | Gemini | `gemini --experimental-acp` |
-| 3 | Goose | `goose acp` |
-| 4 | **Custom** | *(any command)* |
-
-### Claude (via `claude-agent-acp`)
-
-To use Claude, select **Custom** and enter:
+The bridge is folder-aware. Every time you run `bridge` it looks for (or creates) a `.aptove-bridge/` directory **in the current working directory**. All configuration, credentials, and certificates for that instance live there.
 
 ```
-npx @agentclientprotocol/claude-agent-acp
+~/projects/
+  work-agent/
+    .aptove-bridge/      ← config for this bridge instance
+      common.toml
+      cert.pem / key.pem
+  personal-agent/
+    .aptove-bridge/      ← separate config, separate identity
+      common.toml
+      cert.pem / key.pem
 ```
 
-This runs the [`@agentclientprotocol/claude-agent-acp`](https://www.npmjs.com/package/@agentclientprotocol/claude-agent-acp) package, which wraps Claude in an ACP-compatible stdio interface. Node.js must be installed on your machine.
+You can also point the bridge at a specific config directory with the `--config-dir` flag:
 
-You can also set this directly in `common.toml`:
-
-```toml
-agent_command = "npx @agentclientprotocol/claude-agent-acp"
+```bash
+bridge --config-dir ~/my-configs/work
 ```
+
+## Multiple instances on the same machine
+
+You can run as many bridge instances as you like simultaneously — one per folder — and they will operate completely independently:
+
+- Each instance has its own agent identity (`agentId`), auth token, and TLS certificate.
+- Each appears as a separate agent entry in the Aptove mobile app.
+- Only one bridge instance may run from the same folder at a time (enforced by a per-folder lock file).
+
+Each bridge needs a unique TCP port. By default all instances try port **8765**. If that port is already taken, the bridge automatically finds the next free port in the range 8765–8815, saves it to `common.toml`, and starts normally. See the [Local Transport](/bridge/local-transport#port-conflict-resolution) docs for details.
 
 ## Configuration file
 

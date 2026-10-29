@@ -54,6 +54,18 @@ bind_address   = "0.0.0.0"
 advertise_addr = "192.168.1.50"
 ```
 
+### Port conflict resolution
+
+If the configured port is already in use (for example, because another bridge instance is running from a different folder), the bridge automatically scans upward from the configured port and picks the first free one in the range **configured port → configured port + 50**.
+
+When a different port is chosen:
+
+1. The new port is written back to `common.toml` so subsequent restarts use the same port without needing to scan again.
+2. The bridge logs a warning: `Port 8765 is already in use; switching to 8766 for 'local' transport.`
+3. The QR pairing popup opens automatically, prompting you to re-scan on your phone.
+
+**Re-scanning is safe.** The mobile app identifies the bridge by its stable `agentId`, not by its address. Scanning the new QR code updates the stored connection URL for the existing agent — it does not create a duplicate entry.
+
 ---
 
 ## Starting the Bridge
@@ -241,6 +253,20 @@ curl -k "https://192.168.1.100:8765/pair/local?code=847291"
 ---
 
 ## Troubleshooting
+
+### Phone can't connect after restart
+
+The bridge URL (including port) is embedded in the QR code and stored on the phone after pairing. If the port changed since the last pairing — for example because another bridge instance was running at the same time — the stored URL is stale.
+
+Re-scan the QR code from the bridge TUI (`/qr`). The app will update the existing agent's connection address automatically without creating a duplicate entry.
+
+To prevent the port from changing between restarts, make sure each bridge instance has a unique port set in its `common.toml`:
+
+```toml
+[transports.local]
+enabled = true
+port    = 8765   # unique per folder
+```
 
 ### "Connection refused"
 - Ensure the bridge is running
