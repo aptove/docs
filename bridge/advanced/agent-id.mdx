@@ -1,0 +1,82 @@
+---
+title: "Bridge Identity & Agent ID"
+description: "How the bridge identifies itself to connected clients and why bridgeAgentId is the primary identity key."
+---
+
+Every ACP session is wrapped by a bridge-specific protocol layer that operates in the `bridge/*` JSON-RPC namespace. These messages are handled entirely by the bridge — they are never forwarded to the underlying agent process. This page explains the identity part of that layer.
+
+---
+
+## Why bridgeAgentId exists
+
+The bridge binds to a TCP port (e.g. `0.0.0.0:8765`). IP:port is a transport address — it can be reused by any bridge that starts on the same machine. If a new bridge starts at the same address that a previous bridge used, the iOS app's auto-connect logic would silently attach the old agent to the new bridge. The old agent would then send its stored `cwd` to the wrong bridge, making the AI assistant operate in the wrong project directory.
+
+`bridgeAgentId` solves this. It is a stable UUID stored in `common.toml` under `.aptove-bridge/` in the project directory. Each project directory gets a different UUID. The UUID survives restarts of the same bridge but changes if you move to a different directory.
+
+| Key | Value |
+|-----|-------|
+| Source | `CommonConfig.agent_id` in `common.toml` |
+| Scope | One per working directory |
+| Lifetime | Permanent (generated once, never regenerated) |
+| Purpose | Primary identity for bridge ↔ iOS agent matching |
+
+---
+
+## Connection handshake
+
+Immediately after the WebSocket connection is authenticated, before any ACP message is exchanged, the bridge sends a `bridge/identify` notification. This is the pre-ACP bridge handshake.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "bridge/identify",
+  "params": {
+    "bridgeAgentId": "3f2a1b4c-...",
+    "cwd": "/Users/alice/code/my-project"
+  }
+}
+```
+
+The mobile client checks `bridgeAgentId` against the value it stored when it first paired with this bridge. If they match, the connection proceeds normally. If they differ, the client disconnects immediately and shows an actionable warning:
+
+> **A different bridge is now at this address (project: /path/to/other-project). Scan its QR code to add it as a new agent.**
+
+The user can then scan the QR code of the new bridge to add it as a second agent, keeping both projects independent.
+
+---
+
+## Bridge notifications (server → client)
+
+All `bridge/*` notifications the bridge sends include a `bridgeAgentId` field in `params`. This allows the mobile client to continuously verify identity throughout the session, not just at connect time.
+
+| Method | When sent | Key params |
+|--------|-----------|------------|
+| `bridge/identify` | First message after auth, before any ACP | `bridgeAgentId`, `cwd` |
+| `bridge/requestPushToken` | After handshake, if push relay is configured | `bridgeAgentId` |
+| `bridge/bufferReplayComplete` | After reconnect, once all buffered messages are sent | `bridgeAgentId`, `count` |
+| `bridge/memoryLimitReached` | When `MEMORY.md` hits its size limit | `bridgeAgentId`, `currentBytes`, `limitBytes`, `message` |
+| `bridge/remoteUserMessage` | When another device sends a prompt (multi-device sync) | `bridgeAgentId`, `senderId`, `content` |
+
+---
+
+## Bridge messages (client → bridge)
+
+The mobile client can send `bridge/*` messages to control bridge-side features. These are intercepted by the bridge and never forwarded to the agent process.
+
+| Method | Purpose | Key params |
+|--------|---------|------------|
+| `bridge/registerPushToken` | Register a device for push notifications | `platform`, `deviceToken`, `bundleId` |
+| `bridge/unregisterPushToken` | Remove a device's push registration | `deviceToken` |
+| `bridge/appendMemory` | Append a note to `MEMORY.md` | `text` |
+
+---
+
+## What happens on a mismatch
+
+1. The bridge sends `bridge/identify` (or any subsequent `bridge/*` notification) with its `bridgeAgentId`.
+2. The mobile client compares it against the stored `bridgeAgentId` for that agent.
+3. They differ → client disconnects and shows a yellow warning banner in the chat view.
+4. Auto-retry is suppressed for 5 minutes to avoid a rapid reconnect/disconnect loop.
+5. The user scans the new bridge's QR code to create a separate agent for the new project.
+
+Normal reconnects (same bridge restarting) are unaffected — the UUID is stable across restarts.

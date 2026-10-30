@@ -56,7 +56,13 @@
               "bridge/memory",
               "bridge/logs",
               "bridge/tui",
-              "bridge/security"
+              "bridge/security",
+              {
+                "group": "Advanced",
+                "pages": [
+                  "bridge/advanced/agent-id"
+                ]
+              }
             ]
           },
           {
