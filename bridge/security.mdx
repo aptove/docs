@@ -1,0 +1,94 @@
+---
+title: "Security & Resource Limits"
+description: "Resource limits and security controls built into the bridge, with defaults and configuration options."
+---
+
+The bridge enforces several resource limits to protect against memory exhaustion, oversized inputs, and abuse. This page documents each limit — what it protects against, its default value, how to configure it, and what happens when it is reached.
+
+---
+
+## 1. WebSocket message size (`ws_max_message_mb`)
+
+**Protects against:** memory exhaustion caused by an oversized message from a connected client.
+
+When the mobile app sends a prompt that includes images, each image is base64-encoded inside a JSON message. A single full-resolution iPhone photo is 3–5 MB raw, which becomes roughly 4–7 MB base64-encoded. A prompt with several photos can easily reach 20–50 MB.
+
+| Setting | Default | Unit |
+|---------|---------|------|
+| `ws_max_message_mb` | `50` | megabytes |
+
+Set this in `common.toml`:
+
+```toml
+# Maximum WebSocket message size (default: 50 MB).
+# Increase if users send many large images in a single prompt.
+ws_max_message_mb = 50
+```
+
+**What happens when exceeded:** the WebSocket layer rejects the oversized frame and closes the connection with a protocol error. The bridge process does not crash and no memory spike occurs.
+
+---
+
+## 2. Persistent memory file size (`memory_max_kb`)
+
+**Protects against:** unbounded growth of `MEMORY.md`, which is injected into every new agent session. A very large file would consume a disproportionate share of the agent's context window on every session start.
+
+| Setting | Default | Unit |
+|---------|---------|------|
+| `memory_max_kb` | `1024` | kilobytes |
+
+Set this in `common.toml`:
+
+```toml
+# Maximum size of MEMORY.md (default: 1024 KB = 1 MB).
+memory_max_kb = 1024
+```
+
+**Behaviour at thresholds:**
+
+| Threshold | Behaviour |
+|-----------|-----------|
+| **≥ 80%** of limit | `WARN` log emitted on each attempted append |
+| **= 100%** of limit | `ERROR` log emitted; append is **blocked**; connected mobile client receives a `bridge/memoryLimitReached` notification with instructions |
+
+When the limit is reached at session start, the injection is skipped (with a `WARN` log) and the session starts without persistent context.
+
+See [Persistent Memory](/bridge/memory) for details on how to clear or increase the limit.
+
+---
+
+## 3. Webhook URL token length
+
+**Protects against:** oversized URL tokens causing log bloat or buffering overhead in the HTTP handler.
+
+| Limit | Value | Configurable |
+|-------|-------|--------------|
+| Maximum token length | 256 characters | No |
+
+This limit is hardcoded. Legitimate webhook tokens are never anywhere near this length. If the path token exceeds 256 characters the bridge returns `400 Bad Request` immediately and closes the connection.
+
+---
+
+## 4. Pairing code rate limit
+
+**Protects against:** brute-force attempts to guess a valid pairing code.
+
+| Parameter | Value | Configurable |
+|-----------|-------|--------------|
+| Max failed attempts per code | 5 | No |
+| Code lifetime | 60 seconds | No |
+
+After 5 failed verification attempts the current code is invalidated. Codes automatically renew every 60 seconds, at which point the QR code displayed in the TUI updates. The renewed code resets the failed-attempt counter.
+
+---
+
+## 5. WebSocket connection rate limit per IP
+
+**Protects against:** connection flooding from a single IP address.
+
+| Parameter | Value | Configurable |
+|-----------|-------|--------------|
+| Max concurrent connections per IP | 10 | No |
+| Max connection attempts per minute per IP | 30 | No |
+
+Connections that exceed either limit are rejected immediately. These limits are applied per-IP before the WebSocket handshake is completed.

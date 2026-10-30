@@ -1,0 +1,72 @@
+---
+title: "Persistent Memory"
+description: "MEMORY.md — persistent context injected into every new agent session."
+---
+
+## What is MEMORY.md?
+
+The bridge maintains a file called `MEMORY.md` in your `.aptove-bridge/` directory. Its contents are automatically injected as a system-level context block at the start of every new agent session. This gives the agent persistent, cross-session knowledge without you having to re-explain your setup each time.
+
+Typical uses include project conventions, coding preferences, recurring reminders, and any context you want the agent to always have.
+
+## Default location
+
+```
+<working-directory>/.aptove-bridge/MEMORY.md
+```
+
+The file is created automatically (empty) on first run. You can edit it directly with any text editor.
+
+## Adding memories
+
+### From the mobile app
+
+Use the `/memory` slash command in the mobile app to append a new entry. The app sends a `bridge/appendMemory` request to the bridge, which appends the text to `MEMORY.md`.
+
+### Directly on disk
+
+Open `.aptove-bridge/MEMORY.md` in any text editor and save. Changes take effect on the next new session — existing running sessions are not affected.
+
+## Size limit
+
+Large memory files slow down every session start because the content is injected into the agent's context window. The bridge enforces a configurable size limit:
+
+| Setting | Default | Unit |
+|---------|---------|------|
+| `memory_max_kb` | `1024` | kilobytes |
+
+Set this in `common.toml`:
+
+```toml
+# Maximum size of MEMORY.md (default: 1024 KB = 1 MB).
+memory_max_kb = 1024
+```
+
+## Warning behaviour
+
+| Threshold | Behaviour |
+|-----------|-----------|
+| **≥ 80%** of limit | `WARN` log emitted each time an append is attempted |
+| **≥ 100%** of limit | `ERROR` log emitted; append is **blocked**; mobile app receives a `bridge/memoryLimitReached` notification |
+
+When the mobile app receives `bridge/memoryLimitReached`, it displays a warning message in the connection status area so you know immediately that no new memory entries are being saved.
+
+## What to do when the limit is reached
+
+**Option 1 — Clear the file:**
+
+Open `.aptove-bridge/MEMORY.md` and delete entries you no longer need, or empty the file entirely. Appends will resume normally once the file is under the limit.
+
+**Option 2 — Increase the limit:**
+
+Edit `common.toml` and raise `memory_max_kb`:
+
+```toml
+memory_max_kb = 2048   # increase to 2 MB
+```
+
+Restart the bridge for the new limit to take effect.
+
+## Injection behaviour at the limit
+
+If `MEMORY.md` is already over the limit when a new session starts, the bridge skips the injection entirely and logs a `WARN`. The session still starts; it just begins without the persistent context.

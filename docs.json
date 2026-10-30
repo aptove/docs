@@ -53,8 +53,10 @@
               },
               "bridge/sessions",
               "bridge/slash-commands",
+              "bridge/memory",
               "bridge/logs",
-              "bridge/tui"
+              "bridge/tui",
+              "bridge/security"
             ]
           },
           {
