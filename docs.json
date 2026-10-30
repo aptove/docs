@@ -60,7 +60,12 @@
               {
                 "group": "Advanced",
                 "pages": [
-                  "bridge/advanced/agent-id"
+                  "bridge/advanced/agent-id",
+                  "bridge/advanced/memory-injection",
+                  "bridge/advanced/session-resumption",
+                  "bridge/advanced/session-load-error",
+                  "bridge/advanced/commands-injection",
+                  "bridge/advanced/memory-consolidation"
                 ]
               }
             ]

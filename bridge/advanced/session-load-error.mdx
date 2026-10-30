@@ -1,0 +1,55 @@
+---
+title: "Synthetic session/load Error on Fresh Agents"
+description: "When a fresh agent receives a session/load request, the bridge fabricates an error response without involving the agent."
+---
+
+<Warning>
+  This page documents a place where the bridge manufactures an ACP error response that the agent did not produce. It exists for review — the behavior may be kept, refactored, or removed based on that review.
+</Warning>
+
+## What it does
+
+When the bridge spawns a fresh agent process (first connection, no prior session) and the client sends a `session/load` request, the bridge fabricates a JSON-RPC error response and injects it back to the client. The `session/load` message is never forwarded to the agent.
+
+**Synthesized error:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "<original request id>",
+  "error": {
+    "code": -32602,
+    "message": "Invalid params",
+    "data": "Session not found (fresh agent): <session_id>"
+  }
+}
+```
+
+**Trigger:** Only fires on first connection (`needs_init_capture = true`). On reconnects the session intercept handles `session/load` differently (see [Session Resumption](/bridge/advanced/session-resumption)).
+
+**Code location:** `core/src/bridge.rs` ~lines 1330–1370, Task 1 loop.
+
+## Why it was added
+
+Some agents (e.g. Goose) hang or behave unexpectedly when they receive a `session/load` for a session ID they don't recognize. By returning an error immediately, the bridge lets the client fall back to `session/new` and start a clean session without the agent entering an undefined state.
+
+## Request flow
+
+```
+FIRST CONNECTION (fresh agent, client has a stored session ID)
+
+Client ──session/load──► Bridge (intercepts)
+                         Bridge ──synthesized error──► Client
+Client ──session/new──► Bridge ──session/new──► Agent (normal flow)
+```
+
+## Trade-offs
+
+| Concern | Detail |
+|---------|--------|
+| Bridge manufactures errors | The error the client receives did not come from the agent. |
+| Blocks agents that support session/load on first connect | If an agent legitimately supports loading an existing session on first connection, this intercept prevents it from working. |
+| Agent-specific workaround | This was added to work around specific agent behavior (Goose). A well-behaved agent that returns a proper "session not found" error would not need this. |
+
+## Alternative if removed
+
+Let `session/load` reach the agent. Agents that don't recognize the session return their own error response. The client handles it the same way. Agents that do recognize the session proceed normally. The behavior would be identical for well-behaved agents and only differs for agents that hang on unknown session IDs.

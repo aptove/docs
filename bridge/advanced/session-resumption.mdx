@@ -1,0 +1,59 @@
+---
+title: "Session Resumption — Initialize and Session Intercept"
+description: "On reconnect, the bridge intercepts initialize and session requests and replies with cached responses, bypassing the agent."
+---
+
+<Warning>
+  This page documents a place where the bridge intercepts ACP protocol messages and synthesizes responses. It exists for review — the behavior may be kept, refactored, or removed based on that review.
+</Warning>
+
+## What it does
+
+When a client reconnects to a bridge that still has a live agent process in its pool, the bridge intercepts two ACP messages and replies with cached responses — the agent never sees either message:
+
+1. **`initialize`** — The bridge intercepts the client's `initialize` request and replies with the response that was cached from the first connection.
+2. **`session/new` / `session/load` / `session/resume`** — The bridge intercepts the session request and replies with the cached session response, injecting the original session ID so the agent is unaware a reconnect happened.
+
+**Code location:**
+- Trigger logic: `core/src/bridge.rs` ~lines 1034–1069
+- Session intercept implementation: `core/src/bridge.rs` ~lines 1818–1950
+- Initialize intercept implementation: `core/src/bridge.rs` ~lines 1954–2013
+- Pool caching: `core/src/agent_pool.rs` ~lines 354–389
+
+## Why it was added
+
+Keeps agent processes alive across temporary client disconnects — network switches, app backgrounding, device sleep. Without this, every reconnect would spawn a fresh agent and lose the entire conversation history.
+
+## Connection flow comparison
+
+**Without session resumption:**
+```
+RECONNECT
+Client ──initialize──► Bridge ──initialize──► Agent (re-initializes, state lost)
+Client ──session/new──► Bridge ──session/new──► Agent (new session, history gone)
+```
+
+**With session resumption:**
+```
+RECONNECT
+Client ──initialize──► Bridge (intercepts, replies with cached init response)
+Client ──session/load──► Bridge (intercepts, replies with cached session ID)
+                         ↓
+                    Agent process untouched — still holds conversation state
+```
+
+## Cache invalidation
+
+The bridge detects `"Session not found"` errors in agent responses and clears the cached session response via `pool.clear_session_response()`. This prevents replaying a stale session ID after the agent has restarted.
+
+## Trade-offs
+
+| Concern | Detail |
+|---------|--------|
+| Bridge speaks for the agent | The bridge fabricates responses the agent did not produce. |
+| Stale cache window | Between agent restart and the next `session/load` error, there is a brief window where the client receives a false "session resumed" response and sends messages to an agent that no longer holds the session. |
+| Agent restart not detected proactively | The cache is only invalidated reactively (on error), not proactively. |
+
+## Alternative if removed
+
+Every reconnect starts a fresh agent and session. No conversation history is preserved across disconnects. Alternatively, a proper ACP session-token exchange between client and agent (without bridge interception) could achieve the same result with the agent's explicit participation.

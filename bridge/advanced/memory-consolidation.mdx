@@ -1,0 +1,57 @@
+---
+title: "Silent Memory Consolidation"
+description: "After bridge/appendMemory, the bridge sends a hidden session/prompt to the agent to consolidate MEMORY.md, then suppresses the response."
+---
+
+<Warning>
+  This page documents a place where the bridge synthesizes an ACP session/prompt without the client's knowledge and suppresses the agent's response. It exists for review — the behavior may be kept, refactored, or removed based on that review.
+</Warning>
+
+## What it does
+
+When the client sends `bridge/appendMemory`, the bridge:
+
+1. Appends the new text to `MEMORY.md` on disk.
+2. Constructs a silent synthetic `session/prompt` and sends it to the agent, asking it to consolidate and deduplicate the memory file.
+3. Arms a `suppress_response_id` with the request ID of that prompt.
+4. Task 2 (Agent → WebSocket) detects the matching response ID, captures the agent's output, and suppresses it — the client never sees it.
+5. The bridge extracts text from `<merged_memory>` tags in the captured output and writes it back to `MEMORY.md`.
+
+**Code location:**
+- Prompt synthesis: `core/src/bridge.rs` ~lines 1281–1323
+- Response suppression and extraction: `core/src/bridge.rs` ~lines 1540–1590
+
+## Why it was added
+
+Prevents `MEMORY.md` from growing unbounded with duplicate or contradictory entries. As users add more notes over time, the agent consolidates them into a clean merged form. Without this, the file would only grow until it hits the `memory_max_kb` limit.
+
+## The hidden round-trip
+
+```
+Client sends: bridge/appendMemory { text: "Always use TypeScript" }
+                    ↓
+Bridge appends to MEMORY.md
+Bridge ──silent session/prompt──► Agent
+                                  (asks agent to consolidate memory)
+                    ↓
+Agent responds with <merged_memory>...</merged_memory>
+                    ↓
+Bridge captures response (client never sees it)
+Bridge extracts merged content → overwrites MEMORY.md
+```
+
+The client sees no indication any of this happened. The next `session/prompt` will inject the consolidated MEMORY.md instead of the raw appended version.
+
+## Trade-offs
+
+| Concern | Detail |
+|---------|--------|
+| Hidden round-trip to agent | The agent processes a prompt the user never sent. The client has no visibility into this. |
+| Race condition risk | If the agent is mid-response when the consolidation prompt is sent, the `suppress_response_id` mechanism could suppress a legitimate response chunk if ID matching fails. |
+| Session dependency | This only works when a session is active. If no session exists yet, the consolidation is skipped silently. |
+| Agent output consumed | The agent's consolidation response is permanently discarded. If the agent produces anything other than `<merged_memory>` tags (e.g. tool calls, errors), it is lost. |
+| Opacity | Neither the client nor the user knows the agent is being used as a background processing service. |
+
+## Alternative if removed
+
+`MEMORY.md` grows with each `bridge/appendMemory` until it hits the size limit. Consolidation would need to be a user-initiated action (e.g. a `/compact-memory` slash command) that the client sends explicitly, making the round-trip visible and intentional.

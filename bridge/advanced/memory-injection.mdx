@@ -1,0 +1,60 @@
+---
+title: "Memory Injection into session/prompt"
+description: "The bridge prepends MEMORY.md content into session/prompt messages before forwarding to the agent."
+---
+
+<Warning>
+  This page documents a place where the bridge modifies an ACP protocol message in flight. It exists for review — the behavior may be kept, refactored, or removed based on that review.
+</Warning>
+
+## What it does
+
+Before forwarding a `session/prompt` message from the client to the agent, the bridge reads `MEMORY.md` and prepends its contents as an additional content block at the start of the `prompt` array. The agent receives a different message than the client sent.
+
+**Trigger:** Fires once per connection on the first `session/prompt` after a new session (or after `session/new`). A `memory_injected` flag prevents repeat injection within the same connection.
+
+**Code location:** `core/src/bridge.rs` ~lines 1372–1403, inside the Task 1 (WebSocket → Agent) loop.
+
+## Why it was added
+
+Persistent memory — gives the agent context from past sessions (notes saved via `/memory`) without requiring the iOS client to manage or store that context. The bridge acts as an invisible context injector.
+
+## What the agent sees
+
+The client sends:
+```json
+{
+  "method": "session/prompt",
+  "params": {
+    "prompt": [{ "type": "text", "text": "What did we discuss yesterday?" }]
+  }
+}
+```
+
+The agent receives:
+```json
+{
+  "method": "session/prompt",
+  "params": {
+    "prompt": [
+      { "type": "text", "text": "<memory>\n... contents of MEMORY.md ...\n</memory>" },
+      { "type": "text", "text": "What did we discuss yesterday?" }
+    ]
+  }
+}
+```
+
+The client has no visibility into what was prepended.
+
+## Trade-offs
+
+| Concern | Detail |
+|---------|--------|
+| Silent modification | The bridge changes an ACP message the client authored. The client cannot see or control what was added. |
+| Context window cost | Every new session starts by consuming tokens for MEMORY.md content — without any indication to the user. |
+| No size feedback | If the agent's context window is near capacity, this injection can push it over without warning (separate from the `memory_max_kb` file-size limit). |
+| Agent-specific behavior | Not all agents handle injected content blocks the same way. |
+
+## Alternative if removed
+
+The iOS client would need to read and prepend `MEMORY.md` itself (requires exposing the file over an API), or the bridge would expose a dedicated ACP capability that the client could call explicitly to inject memory. This would make the behavior visible and opt-in.

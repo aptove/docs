@@ -1,0 +1,71 @@
+---
+title: "Slash Command Injection (available_commands_update)"
+description: "After every session start, the bridge injects a synthetic available_commands_update notification the agent never sent."
+---
+
+<Warning>
+  This page documents a place where the bridge synthesizes an ACP notification the agent did not produce. It exists for review — the behavior may be kept, refactored, or removed based on that review.
+</Warning>
+
+## What it does
+
+After every session start — both fresh sessions and reconnects where the cached session response is replayed — the bridge injects a synthetic `session/update` notification containing an `available_commands_update` payload. The agent never sent this notification.
+
+The slash commands in the payload are read from `common.toml` (`slash_commands` array). If none are configured, a default set is used (`help`, `clear`, `compact`, `agent`).
+
+**Code location:** `core/src/bridge.rs` ~lines 1593–1636 (after fresh session response) and ~lines 1939–1947 (after cached session replay).
+
+## Why it was added
+
+Agents like Copilot CLI do not send `available_commands_update` themselves. Without injection, the iOS slash command picker is empty and users have no way to discover slash commands. The bridge compensates by injecting a configured list as if the agent sent it.
+
+## What the client sees
+
+After the bridge replays the session response, an extra notification arrives:
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "session/update",
+  "params": {
+    "sessionId": "...",
+    "sessionUpdate": {
+      "type": "available_commands_update",
+      "commands": [
+        { "name": "help",    "description": "Show available commands" },
+        { "name": "clear",   "description": "Clear conversation history" },
+        { "name": "compact", "description": "Compact conversation history", "input_hint": "focus topic (optional)" },
+        { "name": "agent",   "description": "Configure agent settings" }
+      ]
+    }
+  }
+}
+```
+
+The agent did not produce this. If the agent also sends its own `available_commands_update`, the client receives two — the bridge's injected version and the agent's real one.
+
+## Configuration
+
+Slash commands can be customized in `common.toml`:
+
+```toml
+[[slash_commands]]
+name = "review"
+description = "Review recent changes"
+
+[[slash_commands]]
+name = "test"
+description = "Run tests"
+input_hint = "test name (optional)"
+```
+
+## Trade-offs
+
+| Concern | Detail |
+|---------|--------|
+| Bridge fabricates agent notifications | The client believes the agent declared these commands, but the agent had no part in it. |
+| Config-driven, not agent-driven | Commands are configured in `common.toml`, not negotiated with the agent. If the agent doesn't actually support a command, it still appears in the picker. |
+| Double notification | If the agent does send `available_commands_update`, the client receives two — the injected one and the real one. The second will overwrite the first, but the timing is not guaranteed. |
+
+## Alternative if removed
+
+Slash commands would only appear if the agent itself sends `available_commands_update`. For agents that do (e.g. the native Aptove agent), nothing would change. For agents that don't (e.g. Copilot CLI), the slash command picker would be empty unless the client implements its own static command list.
