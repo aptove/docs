@@ -56,6 +56,7 @@
               "bridge/memory",
               "bridge/logs",
               "bridge/tui",
+              "bridge/keep-alive",
               "bridge/security",
               {
                 "group": "Advanced",
@@ -75,7 +76,8 @@
             "pages": [
               "mobile-app/overview",
               "mobile-app/pairing",
-              "mobile-app/features"
+              "mobile-app/features",
+              "mobile-app/voice-input"
             ]
           },
           {
