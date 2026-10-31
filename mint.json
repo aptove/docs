@@ -40,7 +40,8 @@
         "bridge/tailscale-transport",
         "bridge/sessions",
         "bridge/slash-commands",
-        "bridge/tui"
+        "bridge/tui",
+        "bridge/keep-alive"
       ]
     },
     {
