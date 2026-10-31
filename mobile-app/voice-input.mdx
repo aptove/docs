@@ -1,0 +1,93 @@
+---
+title: "Voice Input"
+description: "Dictate messages using on-device speech recognition, with AI-assisted transcript correction."
+---
+
+## Overview
+
+The Aptove app lets you dictate messages using your device's built-in speech recognition. No cloud subscription or third-party service is required — recognition runs on-device via iOS's Speech framework.
+
+After transcription, the app sends the raw transcript to the connected agent for AI-assisted correction (fixing punctuation, grammar, and recognition errors) before the message is sent.
+
+## How to use voice input
+
+<Steps>
+  <Step title="Tap the microphone icon">
+    Tap the mic button in the chat input bar. The app will request microphone and speech recognition permissions on first use.
+  </Step>
+  <Step title="Speak your message">
+    Speak clearly. A waveform indicator confirms the mic is active. Tap the mic again to stop recording early, or wait for automatic silence detection.
+  </Step>
+  <Step title="AI corrects the transcript">
+    The raw transcript is sent to the agent for grammar and punctuation correction. A spinner shows while this is in progress.
+  </Step>
+  <Step title="Review and send">
+    The corrected text appears in the input field. Edit if needed, then tap **Send**.
+  </Step>
+</Steps>
+
+## Selecting a voice language
+
+The voice recognition language is independent of the app's display language. Set it in **Settings → Voice Language**.
+
+The picker shows all languages supported by iOS speech recognition on your device. This list varies by iOS version and device model — newer devices and iOS versions support more languages.
+
+**To change the voice language:**
+
+1. Open **Settings** (gear icon on the home screen)
+2. Tap **Voice Language**
+3. Select your language from the list
+
+The selected language is applied immediately to all future recordings in both the chat and the Add Memory sheet.
+
+## AI transcript correction
+
+After speech-to-text, the raw transcript is forwarded to the connected agent with an instruction to:
+
+- Fix recognition errors (misheard words, wrong homophones)
+- Add correct punctuation and capitalisation
+- Correct grammar
+
+The correction request includes the spoken language so the agent can apply language-appropriate rules. This step requires an active bridge connection — if the bridge is unreachable, the uncorrected transcript is placed in the input field instead.
+
+## Supported languages
+
+Voice input supports every language available in iOS's on-device speech recognition (`SFSpeechRecognizer`). The exact list depends on your iOS version and device, but typically includes:
+
+| Region | Example languages |
+|--------|------------------|
+| Europe | English, French, German, Italian, Spanish, Portuguese, Dutch, Polish, Swedish, Norwegian, Danish, Finnish, Russian, Ukrainian, Greek, Czech, Slovak, Hungarian, Romanian, Croatian, Bulgarian |
+| Americas | English (US/CA/AU/UK/IN), Spanish (ES/MX/US), Portuguese (BR/PT), French (CA) |
+| Middle East & Africa | Arabic, Hebrew, Turkish |
+| Asia-Pacific | Mandarin (Simplified/Traditional), Japanese, Korean, Hindi, Thai, Indonesian, Malay, Vietnamese |
+
+The in-app picker is populated at runtime from `SFSpeechRecognizer.supportedLocales()`, so it always reflects what iOS actually supports on your device — no app update needed when Apple adds new languages.
+
+## Permissions
+
+| Permission | When requested | Required for |
+|------------|---------------|--------------|
+| Microphone | First tap of mic button | Recording audio |
+| Speech Recognition | First tap of mic button | On-device transcription |
+
+Both permissions can be managed in **iOS Settings → Aptove** at any time.
+
+## Offline support
+
+Speech recognition works offline on iOS 16+ for supported languages. On older devices or for languages without an on-device model, iOS may require a brief internet connection to perform recognition.
+
+The AI correction step always requires an active bridge connection, as it is processed by the connected agent.
+
+## Troubleshooting
+
+**Mic button is greyed out / does nothing**
+Check that both Microphone and Speech Recognition permissions are granted in iOS Settings → Aptove.
+
+**Wrong language is recognised**
+Go to Settings → Voice Language and select the correct locale. Make sure the locale matches the language you are speaking — e.g. select **Spanish (Mexico)** rather than **Spanish (Spain)** if you are speaking Latin American Spanish.
+
+**Transcript correction spinner never completes**
+The bridge connection may have dropped. Check the agent's connection status on the home screen and reconnect if needed.
+
+**Language not in the list**
+The list is limited to languages iOS supports on your specific device. If a language is missing, it is not available for on-device speech recognition on your iOS version.

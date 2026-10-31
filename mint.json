@@ -48,7 +48,8 @@
       "pages": [
         "mobile-app/overview",
         "mobile-app/pairing",
-        "mobile-app/features"
+        "mobile-app/features",
+        "mobile-app/voice-input"
       ]
     },
     {
