@@ -1,0 +1,67 @@
+---
+title: "Keep-Alive"
+description: "Prevent the host computer from sleeping while the bridge is running."
+---
+
+## Overview
+
+When keep-alive is enabled the bridge holds an OS-level power assertion that prevents the computer from sleeping due to inactivity. This keeps the WebSocket connection open indefinitely so the mobile app can reach the agent at any time.
+
+Keep-alive is **enabled by default**. Toggle it at runtime with the `/keep-alive` command or set `keep_alive = false` in `common.toml` to disable it permanently.
+
+## Behavior with keep-alive ON
+
+| Event | Display | System | Bridge |
+|-------|---------|--------|--------|
+| Idle timeout (no user activity) | Stays on | Stays awake | Continues running |
+| Manual screen lock (Cmd+Ctrl+Q / Win+L) | Locks | Stays awake | Continues running |
+| Laptop lid closed | Turns off | **Sleeps** | Connections drop |
+
+Keep-alive prevents idle sleep but cannot override a lid-close event — that is treated by every OS as a deliberate hardware action. See [Platform notes](#platform-notes) below.
+
+## Behavior with keep-alive OFF
+
+The OS applies its normal power schedule. On most machines this means the system sleeps after several minutes of inactivity, dropping all open WebSocket connections. The bridge process itself is suspended; the agent process is killed by the OS when the machine sleeps.
+
+When the computer wakes and the bridge is restarted, the mobile app reconnects automatically the next time it is foregrounded. Sessions are preserved for up to 30 minutes after the last connection; after that the bridge starts a fresh session.
+
+## Platform notes
+
+### macOS
+
+Keep-alive uses `IOPMAssertPreventUserIdleDisplaySleep` (via the `keepawake` crate). This prevents both display dimming and system idle sleep. It does **not** prevent sleep triggered by closing the laptop lid.
+
+**Workaround for lid close**: connect an external display and a power source before closing the lid. macOS enters clamshell mode and keeps the system running.
+
+### Windows
+
+Keep-alive calls `SetThreadExecutionState` with `ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_CONTINUOUS`. This prevents display sleep and idle system sleep. It does not prevent sleep triggered by closing the lid; that is controlled by **Power Options → "When I close the lid"** in the Control Panel.
+
+### Linux
+
+Keep-alive relies on `systemd-inhibit` or a D-Bus session inhibitor. This works on desktop environments (GNOME, KDE, etc.) that provide a D-Bus session. It may not work on headless servers or minimal installs without a display manager.
+
+If keep-alive fails on Linux the bridge logs a warning on startup:
+
+```
+[WARN] Keep-alive guard creation failed — system may still sleep.
+       On Linux, systemd-inhibit or a D-Bus session is required.
+```
+
+## Toggling keep-alive
+
+Type `/keep-alive` in the TUI input bar to toggle the setting. The status bar shows the current state:
+
+- `[awake ◉]` — keep-alive active, display and idle sleep are prevented
+- `[awake ○]` — keep-alive disabled or guard creation failed
+
+The setting is saved to `common.toml` automatically and persists across bridge restarts. You can also set it manually:
+
+```toml
+# common.toml
+keep_alive = false
+```
+
+<Warning>
+If the status bar shows `[awake ○]` but you have keep-alive enabled, check the log panel for a warning message. On Linux this usually means `systemd-inhibit` is not available in the current session.
+</Warning>
