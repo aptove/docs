@@ -60,14 +60,21 @@ input_hint = "what to focus on"   # Shows a text input in the app
 
 # ── Push Notifications ────────────────────────────────────────────────────────
 # Which push provider is active: "none", "aptove", or "custom".
-# Credentials in [push_relay] are preserved even when push_selection = "none",
-# so you can re-enable push later without re-entering them.
+# Each provider's credentials are stored in its own section so configuring one
+# never overwrites the other. Set push_selection = "none" to disable push
+# without losing your saved credentials.
 push_selection = "aptove"
 
-[push_relay]
-url          = "https://push.aptove.com"
-token_url    = "https://token.aptove.com"
-client_id    = "your-client-id"
+[aptove_push_relay]
+url           = "https://push.aptove.com"
+token_url     = "https://token.aptove.com"
+client_id     = "your-client-id"
+client_secret = "your-client-secret"
+
+[custom_push_relay]
+url           = "https://push.example.com"
+token_url     = "https://token.example.com"
+client_id     = "your-client-id"
 client_secret = "your-client-secret"
 
 ```
@@ -85,7 +92,7 @@ client_secret = "your-client-secret"
 | `advertise_addr` | string | auto-detected | Override the LAN IP included in the pairing QR code. |
 | `keep_alive` | bool | `true` | Prevent system sleep while the bridge is running. |
 | `log_level` | string | `"WARN"` | Minimum log level shown in the TUI (`ERROR` / `WARN` / `INFO` / `DEBUG` / `TRACE`). |
-| `push_selection` | string | *(unset)* | Active push provider: `"none"`, `"aptove"`, or `"custom"`. Not present until the user makes a push choice. Setting to `"none"` disables push without erasing credentials. |
+| `push_selection` | string | *(unset)* | Active push provider: `"none"`, `"aptove"`, or `"custom"`. Not present until the user makes a push choice. Setting to `"none"` disables push without erasing credentials. Each provider stores credentials in its own section (`[aptove_push_relay]` / `[custom_push_relay]`) so they never overwrite each other. |
 
 ### `[transports.<name>]`
 
