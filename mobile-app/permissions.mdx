@@ -14,6 +14,7 @@ The Aptove app requests the following iOS permissions. Each one is only used for
 | **Speech Recognition** | First voice input | Convert recorded audio to text using on-device speech recognition. |
 | **Photo Library** | First image attachment | Access photos when you choose to attach an image to a chat message or set an agent avatar. |
 | **Push Notifications** | First app launch | Deliver notifications when the agent sends a message while the app is in the background. |
+| **File Access** | On file attach (no permission required) | Pick documents from Files, iCloud Drive, and third-party providers to send as attachments. |
 
 ## Notes
 
@@ -28,6 +29,12 @@ Both permissions are requested together the first time you tap the microphone bu
 ### Photo Library
 
 The app uses the system photo picker, which lets you select images without granting broad library access. On iOS 14 and later you can grant access to specific photos only rather than your entire library.
+
+### File Access
+
+File attachment uses the iOS system document picker (`UIDocumentPickerViewController`), which runs in a separate process and does not require any permission grant from the user. You choose files interactively from Files, iCloud Drive, or any connected cloud storage provider.
+
+Supported file types: PDF, plain text, CSV, JSON, RTF. Files must be no larger than 10 MB. If a selected file is stored in iCloud and has not yet been downloaded to the device, the app will show an error — download the file first and try again.
 
 ### Push Notifications
 
