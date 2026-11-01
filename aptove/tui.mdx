@@ -1,6 +1,6 @@
 ---
 title: "Terminal UI"
-description: "The bridge's built-in terminal interface for managing the bridge interactively."
+description: "Aptove CLI's built-in terminal interface for managing Aptove CLI interactively."
 ---
 
 ## Overview
@@ -11,26 +11,26 @@ Running `aptove` without arguments opens the TUI — a full-screen terminal appl
 
 ### Setup wizard
 
-On first run (or when required configuration is missing), the wizard runs before the bridge starts:
+On first run (or when required configuration is missing), the wizard runs before Aptove CLI starts:
 
 | Step | Triggered when |
 |------|---------------|
 | Agent select | `agent_command` is not set |
 | Transport pick | No transports are enabled, or 2+ are enabled |
 
-The wizard writes your choices to `common.toml` and then starts the bridge automatically. After the wizard, the QR pairing code is shown immediately.
+The wizard writes your choices to `common.toml` and then starts Aptove CLI automatically. After the wizard, the QR pairing code is shown immediately.
 
 ### Running screen
 
-Once the bridge is running, the TUI shows a three-panel layout:
+Once Aptove CLI is running, the TUI shows a three-panel layout:
 
-- **Status bar** (top) — bridge health, connected clients, active transport
+- **Status bar** (top) — Aptove CLI health, connected clients, active transport
 - **Log panel** (center) — scrollable log stream filtered by `log_level`
 - **Input bar** (bottom) — accepts slash commands
 
 ## Slash commands
 
-Type these in the input bar while the bridge is running:
+Type these in the input bar while Aptove CLI is running:
 
 | Command | Description |
 |---------|-------------|
@@ -40,7 +40,7 @@ Type these in the input bar while the bridge is running:
 | `/keep-alive` | Toggle to prevent the computer to sleep |
 | `/log-level` | Change log verbosity (default: WARN) |
 | `/clear-logs` | Clear the log view |
-| `/quit` | Exit the bridge |
+| `/quit` | Exit Aptove CLI |
 
 ## Keyboard shortcuts
 

@@ -5,9 +5,9 @@ description: "How to configure an ACP-compatible AI agent for use with Aptove."
 
 ## What to enter
 
-When the bridge asks for an agent command, enter the shell command that starts your AI agent. The command must launch a process that speaks the [Agent Client Protocol](https://agentclientprotocol.com) over **stdio** (stdin / stdout).
+When Aptove CLI asks for an agent command, enter the shell command that starts your AI agent. The command must launch a process that speaks the [Agent Client Protocol](https://agentclientprotocol.com) over **stdio** (stdin / stdout).
 
-The bridge will spawn this command as a subprocess and relay messages between it and the Aptove mobile app.
+Aptove CLI will spawn this command as a subprocess and relay messages between it and the Aptove mobile app.
 
 ---
 
@@ -98,5 +98,5 @@ my-agent --acp --model gpt-4
 | Problem | Fix |
 |---------|-----|
 | `Failed to start 'copilot --acp'` | Agent is not installed or not on `$PATH` |
-| Agent starts but bridge shows no clients | Agent is not in ACP mode — add the required flag (e.g. `--acp`) |
+| Agent starts but Aptove CLI shows no clients | Agent is not in ACP mode — add the required flag (e.g. `--acp`) |
 | Agent exits immediately | Run the command manually in a terminal to see the error output |

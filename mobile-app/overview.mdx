@@ -5,7 +5,7 @@ description: "The Aptove iOS and Android apps let you chat with any ACP-compatib
 
 ## What is the Aptove app?
 
-The Aptove app is a native mobile client for AI agents. It connects to the Aptove Bridge over WebSocket and provides a chat interface for interacting with any agent that speaks the [Agent Client Protocol (ACP)](https://github.com/agent-client-protocol).
+The Aptove app is a native mobile client for AI agents. It connects to Aptove CLI over WebSocket and provides a chat interface for interacting with any agent that speaks the [Agent Client Protocol (ACP)](https://github.com/agent-client-protocol).
 
 <CardGroup cols={2}>
   <Card title="iOS" icon="apple" href="https://github.com/aptove/ios">
@@ -18,18 +18,18 @@ The Aptove app is a native mobile client for AI agents. It connects to the Aptov
 
 ## Features
 
-- **Multi-agent support** — connect to multiple bridges and switch between agents from the agent list
+- **Multi-agent support** — connect to multiple Aptove CLI instances and switch between agents from the agent list
 - **Chat with voice** — send messages by typing or by speaking; no additional subscription required
 - **Slash commands** — trigger agent-defined commands from a built-in command picker
-- **Auto-reconnect** — the app reconnects automatically when your network changes or the bridge restarts
+- **Auto-reconnect** — the app reconnects automatically when your network changes or Aptove CLI restarts
 - **Multiple transports** — works with local LAN and Tailscale connections
 - **Secure storage** — connection credentials are stored in the system Keychain
 
 ## Getting started
 
 1. Install the app from the App Store (iOS) or Play Store (Android).
-2. Make sure the [bridge](/bridge/overview) is running on your machine.
-3. Tap **Add Agent** and scan the QR code shown in the bridge TUI.
+2. Make sure [Aptove CLI](/aptove/overview) is running on your machine.
+3. Tap **Add Agent** and scan the QR code shown in the Aptove CLI TUI.
 4. Start chatting.
 
 See [Pairing](/mobile-app/pairing) for a detailed walkthrough of the connection setup.

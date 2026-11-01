@@ -5,7 +5,7 @@ description: "Define custom slash commands that appear in the Aptove app's comma
 
 ## Overview
 
-Slash commands let users trigger predefined actions in the mobile app by typing `/` in the chat input. Many agents (like Claude Code and Codex) send an `available_commands_update` ACP message automatically. For agents that don't — like Copilot CLI or Goose — you can define commands in `common.toml` and the bridge will inject them after every session start.
+Slash commands let users trigger predefined actions in the mobile app by typing `/` in the chat input. Many agents (like Claude Code and Codex) send an `available_commands_update` ACP message automatically. For agents that don't — like Copilot CLI or Goose — you can define commands in `common.toml` and Aptove CLI will inject them after every session start.
 
 ## Defining commands
 
@@ -36,7 +36,7 @@ description = "Write unit tests for the selected code"
 
 ## How it works
 
-When the bridge starts a new session (or loads an existing one), it sends an `available_commands_update` ACP message to the connected app:
+When Aptove CLI starts a new session (or loads an existing one), it sends an `available_commands_update` ACP message to the connected app:
 
 ```json
 {
@@ -51,7 +51,7 @@ When the bridge starts a new session (or loads an existing one), it sends an `av
 The app displays a command picker when the user types `/`. Selecting a command with `input_hint` opens an additional text field before sending.
 
 <Note>
-If the agent itself sends `available_commands_update`, those commands take precedence and the `common.toml` list is not injected — the bridge only injects when the agent doesn't send the notification itself.
+If the agent itself sends `available_commands_update`, those commands take precedence and the `common.toml` list is not injected — Aptove CLI only injects when the agent doesn't send the notification itself.
 </Note>
 
 ## Example: Copilot CLI

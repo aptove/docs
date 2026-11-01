@@ -1,6 +1,6 @@
 ---
 title: "Deployment"
-description: "Step-by-step guide to deploying cf-token and cf-push-relay and wiring them up to the bridge."
+description: "Step-by-step guide to deploying cf-token and cf-push-relay and wiring them up to Aptove CLI."
 ---
 
 Two Cloudflare Workers must be deployed before push notifications work:
@@ -156,7 +156,7 @@ ADMIN_JWT=$(curl -s -X POST https://token.aptove.com/token \
 echo $ADMIN_JWT   # should be a long JWT string, not null
 ```
 
-### 2. Create a push:write client for the bridge
+### 2. Create a push:write client for Aptove CLI
 ```bash
 curl -s -X POST https://token.aptove.com/clients \
   -H "Authorization: Bearer $ADMIN_JWT" \
@@ -169,8 +169,8 @@ Output:
 ```
 **Save `client_secret` now — it cannot be retrieved again.**
 
-### 3. Add to bridge config
-Add a `[push_relay]` section to `.aptove-bridge/common.toml` in your project directory:
+### 3. Add to Aptove CLI config
+Add a `[push_relay]` section to `.aptove/common.toml` in your project directory:
 ```toml
 [push_relay]
 url           = "https://push.aptove.com"
@@ -179,7 +179,7 @@ client_id     = "bridge-home"
 client_secret = "<secret from above>"
 ```
 
-Restart the bridge. With `log_level = "INFO"` set in `common.toml`, logs should show:
+Restart Aptove CLI. With `log_level = "INFO"` set in `common.toml`, logs should show:
 ```
 INFO  Push relay: JWT auth (client_id=bridge-home, relay=https://push.aptove.com)
 ```

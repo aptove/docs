@@ -1,11 +1,11 @@
 ---
 title: "Cloudflare Zero Trust Transport"
-description: "Connect the Aptove app to the bridge from anywhere over the internet using Cloudflare Tunnel and Zero Trust Access."
+description: "Connect the Aptove app to Aptove CLI from anywhere over the internet using Cloudflare Tunnel and Zero Trust Access."
 enterprise: true
 noindex: true
 ---
 
-This guide covers configuring the bridge to accept connections from iOS and Android apps over the internet using Cloudflare Zero Trust. This is the recommended transport for production deployments where devices cannot be on the same local network as the bridge.
+This guide covers configuring Aptove CLI to accept connections from iOS and Android apps over the internet using Cloudflare Zero Trust. This is the recommended transport for production deployments where devices cannot be on the same local network as Aptove CLI.
 
 ## How It Works
 
@@ -18,7 +18,7 @@ This guide covers configuring the bridge to accept connections from iOS and Andr
      Sends CF-Access-Client-Secret header            │ (outbound, no port-forward needed)
                                                      ▼
                                           ┌─────────────────────┐       ┌──────────────┐
-                                          │  Bridge (Rust)      │◄─────►│  ACP Agent   │
+                                          │  Aptove CLI (Rust)  │◄─────►│  ACP Agent   │
                                           │  localhost:<port>   │ stdio │  (your cmd)  │
                                           └─────────────────────┘       └──────────────┘
 ```
@@ -34,7 +34,7 @@ This guide covers configuring the bridge to accept connections from iOS and Andr
   - **Account → Cloudflare Tunnel → Edit** (to create and configure the tunnel)
   - **Account → Access: Apps and Policies → Edit** (to create the Access Application)
   - **Account → Access: Service Tokens → Edit** (to create and rotate Service Tokens)
-- `cloudflared` installed on the machine running the bridge:
+- `cloudflared` installed on the machine running Aptove CLI:
   ```bash
   # macOS
   brew install cloudflare/cloudflare/cloudflared
@@ -57,7 +57,7 @@ Run `aptove` to launch the TUI. The setup wizard runs automatically on first lau
 | API token | Cloudflare API token with the permissions above | `your_api_token` |
 | Account ID | Your Cloudflare account ID | `abc123...` |
 | Domain | Domain managed by Cloudflare | `example.com` |
-| Subdomain | Subdomain for the bridge endpoint (default: `agent`) | `agent` |
+| Subdomain | Subdomain for the Aptove CLI endpoint (default: `agent`) | `agent` |
 
 The wizard automatically:
 1. Creates (or reuses) a named Cloudflare Tunnel
@@ -68,7 +68,7 @@ The wizard automatically:
 6. Writes `~/.cloudflared/<tunnel-id>.json` (tunnel credentials)
 7. Saves all credentials to `.aptove/common.toml` under `[transports.cloudflare]` with `enabled = true`
 
-On every `aptove` startup, a per-project `.aptove/cloudflared.yml` is written with the correct local port. This ensures multiple bridges running from different project folders do not interfere with each other.
+On every `aptove` startup, a per-project `.aptove/cloudflared.yml` is written with the correct local port. This ensures multiple Aptove CLI instances running from different project folders do not interfere with each other.
 
 After setup, verify `.aptove/common.toml` contains:
 
@@ -85,13 +85,13 @@ client_secret = "xxxxx"
 
 ---
 
-## Starting the Bridge
+## Starting Aptove CLI
 
 ```bash
 aptove
 ```
 
-Transport selection is read from `.aptove/common.toml` — no additional flags are needed. The bridge:
+Transport selection is read from `.aptove/common.toml` — no additional flags are needed. Aptove CLI:
 
 1. Loads Cloudflare credentials from `.aptove/common.toml`
 2. Checks Service Token expiry and auto-rotates if within 30 days
@@ -101,17 +101,17 @@ Transport selection is read from `.aptove/common.toml` — no additional flags a
 
 ---
 
-## Running Multiple Bridges Simultaneously
+## Running Multiple Aptove CLI Instances Simultaneously
 
-You can run bridge instances from different project folders at the same time. Each folder is fully independent — it has its own `.aptove/common.toml`, its own agent identity, and its own `cloudflared.yml`.
+You can run Aptove CLI instances from different project folders at the same time. Each folder is fully independent — it has its own `.aptove/common.toml`, its own agent identity, and its own `cloudflared.yml`.
 
 ### Local and Tailscale transports
 
-Multiple simultaneous instances work automatically. Each bridge picks a different port and advertises its own address.
+Multiple simultaneous instances work automatically. Each instance picks a different port and advertises its own address.
 
 ### Cloudflare transport
 
-Cloudflare has an additional constraint: **a DNS CNAME record can only point to one tunnel at a time**. This means two simultaneous Cloudflare bridges must each use a **different subdomain** (and therefore a different hostname):
+Cloudflare has an additional constraint: **a DNS CNAME record can only point to one tunnel at a time**. This means two simultaneous Cloudflare instances must each use a **different subdomain** (and therefore a different hostname):
 
 | Project folder | Subdomain | Endpoint |
 |---------------|-----------|----------|
@@ -120,21 +120,21 @@ Cloudflare has an additional constraint: **a DNS CNAME record can only point to 
 
 Run `aptove` once in each folder — the setup wizard will prompt for a unique subdomain.
 
-Each setup creates a separate Cloudflare tunnel, DNS record, and Access Application. The two bridges then run completely independently and appear as separate agents in the mobile app.
+Each setup creates a separate Cloudflare tunnel, DNS record, and Access Application. The two instances then run completely independently and appear as separate agents in the mobile app.
 
-> **Note:** If two bridges share the same subdomain (e.g. both use `agent.example.com`), only the bridge whose tunnel the DNS CNAME currently points to will receive traffic. Starting a second bridge will not automatically update the DNS — only the initial setup wizard does that.
+> **Note:** If two Aptove CLI instances share the same subdomain (e.g. both use `agent.example.com`), only the instance whose tunnel the DNS CNAME currently points to will receive traffic. Starting a second instance will not automatically update the DNS — only the initial setup wizard does that.
 
 ---
 
 ## Service Token Auto-Rotation
 
-Service Tokens are issued with a 1-year lifetime. The bridge tracks the issuance date in `.aptove/common.toml`. When fewer than 30 days remain:
+Service Tokens are issued with a 1-year lifetime. Aptove CLI tracks the issuance date in `.aptove/common.toml`. When fewer than 30 days remain:
 
-1. The bridge automatically issues a new Service Token via the Cloudflare API
+1. Aptove CLI automatically issues a new Service Token via the Cloudflare API
 2. Saves the new `clientId`/`clientSecret` to `.aptove/common.toml`
 3. Shows the QR code with updated credentials
 
-**The user must re-scan the QR code once after rotation** so the app picks up the new credentials. The bridge logs:
+**The user must re-scan the QR code once after rotation** so the app picks up the new credentials. Aptove CLI logs:
 
 ```
 Cloudflare service token is expiring — auto-rotating...
@@ -150,9 +150,9 @@ Two independent auth layers protect every connection:
 | Layer | Credential | Lifetime | Checked by |
 |-------|-----------|---------|------------|
 | Cloudflare Access | `CF-Access-Client-Id` + `CF-Access-Client-Secret` | 1 year (auto-rotated) | Cloudflare Edge |
-| Bridge auth | `X-Bridge-Token` | Permanent (until `.aptove/common.toml` deleted) | Bridge WebSocket handler |
+| Aptove CLI auth | `X-Bridge-Token` | Permanent (until `.aptove/common.toml` deleted) | Aptove CLI WebSocket handler |
 
-The app must present both. Cloudflare blocks unauthenticated requests before they reach the bridge.
+The app must present both. Cloudflare blocks unauthenticated requests before they reach Aptove CLI.
 
 ---
 
@@ -185,9 +185,9 @@ aptove
 
 ## Security Notes
 
-- `.aptove/common.toml` contains the Cloudflare API token, Service Token secret, and bridge auth token. File permissions are set to `0600` automatically.
-- **The Cloudflare QR code embeds permanent credentials** (`clientId`, `clientSecret`, `authToken`). Unlike the Local and Tailscale transports which use a one-time 6-digit pairing code that expires in 60 seconds, the Cloudflare QR is a static JSON payload. Anyone who captures the QR (photo, screenshot, shoulder surfing) gains permanent access to the bridge from anywhere on the internet until credentials are manually rotated. The bridge prints a warning each time the QR is displayed — treat it like a password.
-- The Service Token secret (`clientSecret`) is only available at issuance time and is never retrievable from the Cloudflare API afterwards. If lost, the bridge deletes the old token and issues a fresh one automatically on the next run. Re-scan the QR code after rotation to update the app.
+- `.aptove/common.toml` contains the Cloudflare API token, Service Token secret, and Aptove CLI auth token. File permissions are set to `0600` automatically.
+- **The Cloudflare QR code embeds permanent credentials** (`clientId`, `clientSecret`, `authToken`). Unlike the Local and Tailscale transports which use a one-time 6-digit pairing code that expires in 60 seconds, the Cloudflare QR is a static JSON payload. Anyone who captures the QR (photo, screenshot, shoulder surfing) gains permanent access to Aptove CLI from anywhere on the internet until credentials are manually rotated. Aptove CLI prints a warning each time the QR is displayed — treat it like a password.
+- The Service Token secret (`clientSecret`) is only available at issuance time and is never retrievable from the Cloudflare API afterwards. If lost, Aptove CLI deletes the old token and issues a fresh one automatically on the next run. Re-scan the QR code after rotation to update the app.
 
 ---
 
@@ -201,8 +201,8 @@ aptove
 | App gets "bad response from server" | Bridge not running or Service Token expired | Ensure `aptove` is running; re-scan QR if token was rotated |
 | App connects but times out | Wrong port in ingress rule | Re-run `aptove` — the port in `.aptove/cloudflared.yml` is rewritten automatically on every startup |
 | "403 Forbidden" from mobile | Missing `CF-Access-Client-Id`/`CF-Access-Client-Secret` headers | Re-scan the QR code |
-| `Another bridge instance is already running from this folder` | A bridge is already running in this project folder | Stop the existing bridge first; only one instance per folder is allowed |
-| Second bridge cannot connect via Cloudflare | Both bridges share the same subdomain | Run `aptove` in each folder with a unique subdomain configured in the wizard; see [Running Multiple Bridges](#running-multiple-bridges-simultaneously) |
+| `Another Aptove instance is already running from this folder` | An Aptove CLI instance is already running in this project folder | Stop the existing Aptove CLI instance first; only one instance per folder is allowed |
+| Second Aptove CLI instance cannot connect via Cloudflare | Both instances share the same subdomain | Run `aptove` in each folder with a unique subdomain configured in the wizard; see [Running Multiple Aptove CLI Instances Simultaneously](#running-multiple-aptove-cli-instances-simultaneously) |
 
 ---
 

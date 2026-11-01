@@ -5,41 +5,41 @@ description: "Aptove lets you chat with any ACP-compatible AI agent from your iO
 
 ## What is Aptove?
 
-Aptove is an open-source mobile client for AI agents built on the [Agent Client Protocol (ACP)](https://github.com/agent-client-protocol). It consists of three main components:
+Aptove is an open-source mobile client and a companion CLI to manage AI agents that supports the [Agent Client Protocol (ACP)](https://github.com/agent-client-protocol). It consists of two main components:
 
 <CardGroup cols={2}>
-  <Card title="Bridge" icon="bridge" href="/bridge/overview">
+  <Card title="Aptove CLI" icon="bridge" href="/aptove/overview">
     A local Rust binary that runs on your machine and exposes any ACP-compatible agent over WebSocket. Supports multiple transports so you can connect from anywhere.
   </Card>
   <Card title="Mobile App" icon="mobile" href="/mobile-app/overview">
-    Native iOS and Android apps that connect to the bridge and let you chat with agents from your phone.
+    Native iOS and Android apps that connect to the Aptove CLI and let you chat with agents from your phone.
   </Card>
 </CardGroup>
 
 ## How it works
 
 ```
-Mobile App  ──[transport]──  Bridge  ──[stdio]──  AI Agent
+Mobile App  ──[transport]──  Aptove CLI  ──[stdio]──  AI Agent
 ```
 
-1. You run the **bridge** on the same machine as your AI agent.
-2. You scan a QR code in the bridge TUI to pair your phone.
+1. You run the **Aptove CLI** on the same machine as your AI agent.
+2. You scan a QR code in the Aptove CLI to pair your phone.
 3. The **mobile app** opens a WebSocket connection through whichever transport you chose (local or Tailscale).
-4. Messages flow bidirectionally over ACP — the bridge pipes them to your agent's stdin/stdout.
+4. Messages flow bidirectionally over ACP — Aptove CLI pipes them to your agent's stdin/stdout.
 
 ## Quickstart
 
 <Steps>
-  <Step title="Install the bridge">
-    Download the latest release from [GitHub](https://github.com/aptove/bridge/releases) or build from source with `cargo build --release`.
+  <Step title="Install the Aptove CLI">
+    Download the latest release from [GitHub](https://github.com/aptove/aptove/releases) or build from source with `cargo build --release`.
   </Step>
-  <Step title="Run the bridge">
-    Run `bridge` in your terminal. The setup wizard walks you through choosing a transport and an agent command.
+  <Step title="Run the Aptove CLI">
+    Run `aptove` in your terminal. The setup wizard walks you through choosing a transport and an agent command.
   </Step>
   <Step title="Pair your phone">
-    The bridge displays a QR code. Open the Aptove app, tap **Add Agent**, and scan it.
+    The Aprove CLI displays a QR code. Open the Aptove Mobile App, tap **Add Agent**, and scan it.
   </Step>
   <Step title="Start chatting">
-    Send your first message. The bridge launches your agent and relays responses back to your phone in real time.
+    Send your first message. The Aptove CLI launches your agent and relays responses back to your phone in real time.
   </Step>
 </Steps>

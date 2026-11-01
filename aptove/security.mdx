@@ -1,9 +1,9 @@
 ---
 title: "Security & Resource Limits"
-description: "Resource limits and security controls built into the bridge, with defaults and configuration options."
+description: "Resource limits and security controls built into Aptove CLI, with defaults and configuration options."
 ---
 
-The bridge enforces several resource limits to protect against memory exhaustion, oversized inputs, and abuse. This page documents each limit — what it protects against, its default value, how to configure it, and what happens when it is reached.
+Aptove CLI enforces several resource limits to protect against memory exhaustion, oversized inputs, and abuse. This page documents each limit — what it protects against, its default value, how to configure it, and what happens when it is reached.
 
 ---
 
@@ -25,7 +25,7 @@ Set this in `common.toml`:
 ws_max_message_mb = 50
 ```
 
-**What happens when exceeded:** the WebSocket layer rejects the oversized frame and closes the connection with a protocol error. The bridge process does not crash and no memory spike occurs.
+**What happens when exceeded:** the WebSocket layer rejects the oversized frame and closes the connection with a protocol error. The Aptove CLI process does not crash and no memory spike occurs.
 
 ---
 
@@ -65,7 +65,7 @@ See [Persistent Memory](/aptove/memory) for details on how to clear or increase 
 |-------|-------|--------------|
 | Maximum token length | 256 characters | No |
 
-This limit is hardcoded. Legitimate webhook tokens are never anywhere near this length. If the path token exceeds 256 characters the bridge returns `400 Bad Request` immediately and closes the connection.
+This limit is hardcoded. Legitimate webhook tokens are never anywhere near this length. If the path token exceeds 256 characters Aptove CLI returns `400 Bad Request` immediately and closes the connection.
 
 ---
 

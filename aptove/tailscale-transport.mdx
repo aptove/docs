@@ -1,17 +1,17 @@
 ---
 title: "Tailscale Transport"
-description: "Connect the Aptove app to the bridge from any device on your tailnet without exposing a public port."
+description: "Connect the Aptove app to Aptove CLI from any device on your tailnet without exposing a public port."
 ---
 
-Use Tailscale as the transport layer for the ACP bridge. This lets you connect from any device on your tailnet without exposing a port to the public internet.
+Use Tailscale as the transport layer for Aptove CLI. This lets you connect from any device on your tailnet without exposing a port to the public internet.
 
-The `tailscale-serve` mode uses `tailscale serve` to proxy HTTPS on port 443 to the bridge's localhost port. TLS is managed by Tailscale using a CA-signed certificate — no certificate pinning required.
+The `tailscale-serve` mode uses `tailscale serve` to proxy HTTPS on port 443 to Aptove CLI's localhost port. TLS is managed by Tailscale using a CA-signed certificate — no certificate pinning required.
 
 ---
 
 ## Prerequisites
 
-- **Tailscale v1.38+** installed on the machine running the bridge
+- **Tailscale v1.38+** installed on the machine running Aptove CLI
   - macOS: `brew install tailscale`
   - Linux: follow [tailscale.com/download](https://tailscale.com/download)
 - Machine enrolled in a tailnet: `tailscale up`
@@ -34,7 +34,7 @@ No port or TLS fields needed — Tailscale handles HTTPS on port 443 and routes 
 
 ---
 
-## Starting the Bridge
+## Starting Aptove CLI
 
 ```bash
 aptove
@@ -46,10 +46,10 @@ Transport mode is read from `.aptove/common.toml` — no extra flags needed.
 
 ## What Happens at Startup
 
-1. The bridge detects your MagicDNS hostname (e.g. `my-laptop.tail1234.ts.net`).
+1. Aptove CLI detects your MagicDNS hostname (e.g. `my-laptop.tail1234.ts.net`).
 2. `tailscale serve --https=443 http://localhost:<port>` is configured automatically.
 3. The pairing URL uses `wss://my-laptop.tail1234.ts.net` — no certificate fingerprint needed because Tailscale provides a CA-signed certificate.
-4. When the bridge exits, `tailscale serve reset` cleans up the serve configuration automatically.
+4. When Aptove CLI exits, `tailscale serve reset` cleans up the serve configuration automatically.
 
 ---
 
@@ -81,7 +81,7 @@ and receives credentials:
 
 ## Mobile Client Notes
 
-- The mobile device must be connected to the same tailnet before pairing. Verify with the Tailscale app that the device can reach the bridge host.
+- The mobile device must be connected to the same tailnet before pairing. Verify with the Tailscale app that the device can reach the Aptove CLI host.
 - After pairing, the app reconnects automatically as long as the device remains on the tailnet.
 
 ---
@@ -94,4 +94,4 @@ and receives credentials:
 | `Not enrolled in a Tailscale network` | Machine not connected | Run `tailscale up` |
 | `tailscale-serve mode requires MagicDNS + HTTPS` | MagicDNS or HTTPS not enabled on tailnet | Enable in [Tailscale admin console](https://login.tailscale.com/admin/dns) → DNS |
 | `tailscale serve requires Tailscale v1.38+` | Outdated Tailscale | Update Tailscale |
-| App cannot reach bridge after pairing | Mobile not on the same tailnet | Open Tailscale app on the phone, ensure it's signed in and connected |
+| App cannot reach Aptove CLI after pairing | Mobile not on the same tailnet | Open Tailscale app on the phone, ensure it's signed in and connected |

@@ -1,13 +1,13 @@
 ---
 title: "cf-push-relay"
-description: "A Cloudflare Worker that receives push requests from the bridge and delivers them to iOS and Android devices."
+description: "A Cloudflare Worker that receives push requests from Aptove CLI and delivers them to iOS and Android devices."
 ---
 
 ## What it does
 
 `cf-push-relay` is the delivery side of the push server. It:
 
-- Accepts device token registrations from the bridge
+- Accepts device token registrations from Aptove CLI
 - On a push request, fans out notifications to all registered devices for that client
 - Manages APNs (Apple) and FCM (Google) auth tokens on a cron schedule so each push costs near-zero CPU
 

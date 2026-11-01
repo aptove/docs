@@ -1,15 +1,15 @@
 ---
 title: "Slash Command Injection (available_commands_update)"
-description: "After every session start, the bridge injects a synthetic available_commands_update notification the agent never sent."
+description: "After every session start, Aptove CLI injects a synthetic available_commands_update notification the agent never sent."
 ---
 
 <Warning>
-  This page documents a place where the bridge synthesizes an ACP notification the agent did not produce. It exists for review — the behavior may be kept, refactored, or removed based on that review.
+  This page documents a place where Aptove CLI synthesizes an ACP notification the agent did not produce. It exists for review — the behavior may be kept, refactored, or removed based on that review.
 </Warning>
 
 ## What it does
 
-After every session start — both fresh sessions and reconnects where the cached session response is replayed — the bridge injects a synthetic `session/update` notification containing an `available_commands_update` payload. The agent never sent this notification.
+After every session start — both fresh sessions and reconnects where the cached session response is replayed — Aptove CLI injects a synthetic `session/update` notification containing an `available_commands_update` payload. The agent never sent this notification.
 
 The slash commands in the payload are read from `common.toml` (`slash_commands` array). If none are configured, a default set is used (`help`, `clear`, `compact`, `agent`).
 
@@ -17,11 +17,11 @@ The slash commands in the payload are read from `common.toml` (`slash_commands` 
 
 ## Why it was added
 
-Agents like Copilot CLI do not send `available_commands_update` themselves. Without injection, the iOS slash command picker is empty and users have no way to discover slash commands. The bridge compensates by injecting a configured list as if the agent sent it.
+Agents like Copilot CLI do not send `available_commands_update` themselves. Without injection, the iOS slash command picker is empty and users have no way to discover slash commands. Aptove CLI compensates by injecting a configured list as if the agent sent it.
 
 ## What the client sees
 
-After the bridge replays the session response, an extra notification arrives:
+After Aptove CLI replays the session response, an extra notification arrives:
 ```json
 {
   "jsonrpc": "2.0",
@@ -41,7 +41,7 @@ After the bridge replays the session response, an extra notification arrives:
 }
 ```
 
-The agent did not produce this. If the agent also sends its own `available_commands_update`, the client receives two — the bridge's injected version and the agent's real one.
+The agent did not produce this. If the agent also sends its own `available_commands_update`, the client receives two — Aptove CLI's injected version and the agent's real one.
 
 ## Configuration
 
@@ -62,9 +62,9 @@ input_hint = "test name (optional)"
 
 | Concern | Detail |
 |---------|--------|
-| Bridge fabricates agent notifications | The client believes the agent declared these commands, but the agent had no part in it. |
+| Aptove CLI fabricates agent notifications | The client believes the agent declared these commands, but the agent had no part in it. |
 | Config-driven, not agent-driven | Commands are configured in `common.toml`, not negotiated with the agent. If the agent doesn't actually support a command, it still appears in the picker. |
-| Double notification | If the agent does send `available_commands_update`, the client receives two — the injected one and the real one. The second will overwrite the first, but the timing is not guaranteed. |
+| Double notification | If the agent does send `available_commands_update`, the client receives two — Aptove CLI's injected one and the agent's real one. The second will overwrite the first, but the timing is not guaranteed. |
 
 ## Alternative if removed
 

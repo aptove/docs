@@ -1,15 +1,15 @@
 ---
 title: "Local Transport"
-description: "Connect the Aptove app to the bridge over your local network using TLS-pinned WebSockets."
+description: "Connect the Aptove app to Aptove CLI over your local network using TLS-pinned WebSockets."
 ---
 
-The local transport enables secure connections between client apps (iOS, Android, desktop) and the bridge running on the same local network. This is ideal for development, local-first deployments, and scenarios where Tailscale isn't available.
+The local transport enables secure connections between client apps (iOS, Android, desktop) and Aptove CLI running on the same local network. This is ideal for development, local-first deployments, and scenarios where Tailscale isn't available.
 
 ## Overview
 
 ```
 ┌─────────────────┐      Local Network       ┌─────────────────┐
-│   Mobile App    │◄────────TLS/WSS─────────►│     Bridge      │
+│   Mobile App    │◄────────TLS/WSS─────────►│   Aptove CLI    │
 │  (iOS/Android)  │                          │  (Your Machine) │
 └─────────────────┘                          └─────────────────┘
         │                                            │
@@ -44,7 +44,7 @@ The following top-level fields in `common.toml` affect the local transport:
 |-------|---------|-------------|
 | `agent_command` | _(wizard prompt)_ | Agent command to launch (e.g. `"copilot --acp"`) |
 | `bind_address` | `"0.0.0.0"` | TCP address the WebSocket server binds to |
-| `advertise_addr` | Auto-detected | IP or hostname advertised in the QR code and embedded in the TLS cert SANs. Set this when the bridge's local IP differs from the address reachable by clients (e.g. inside a container). |
+| `advertise_addr` | Auto-detected | IP or hostname advertised in the QR code and embedded in the TLS cert SANs. Set this when Aptove CLI's local IP differs from the address reachable by clients (e.g. inside a container). |
 
 Example:
 
@@ -56,19 +56,19 @@ advertise_addr = "192.168.1.50"
 
 ### Port conflict resolution
 
-If the configured port is already in use (for example, because another bridge instance is running from a different folder), the bridge automatically scans upward from the configured port and picks the first free one in the range **configured port → configured port + 50**.
+If the configured port is already in use (for example, because another Aptove CLI instance is running from a different folder), Aptove CLI automatically scans upward from the configured port and picks the first free one in the range **configured port → configured port + 50**.
 
 When a different port is chosen:
 
 1. The new port is written back to `common.toml` so subsequent restarts use the same port without needing to scan again.
-2. The bridge logs a warning: `Port 8765 is already in use; switching to 8766 for 'local' transport.`
+2. Aptove CLI logs a warning: `Port 8765 is already in use; switching to 8766 for 'local' transport.`
 3. The QR pairing popup opens automatically, prompting you to re-scan on your phone.
 
-**Re-scanning is safe.** The mobile app identifies the bridge by its stable `agentId`, not by its address. Scanning the new QR code updates the stored connection URL for the existing agent — it does not create a duplicate entry.
+**Re-scanning is safe.** The mobile app identifies Aptove CLI by its stable `agentId`, not by its address. Scanning the new QR code updates the stored connection URL for the existing agent — it does not create a duplicate entry.
 
 ---
 
-## Starting the Bridge
+## Starting Aptove CLI
 
 Run `aptove` with no arguments to launch the TUI. On first run, the setup wizard asks for the agent command and transport configuration. Subsequent runs go straight to the running screen.
 
@@ -82,7 +82,7 @@ Once running, press `/qr` in the TUI to display the pairing QR code.
 
 ## Container Usage
 
-When running the bridge inside a Docker or Apple Native container, the bridge's local IP is the container's internal virtual IP — not your machine's LAN IP. Set `advertise_addr` in `common.toml` to override both the QR code URL **and** the TLS certificate's Subject Alternative Names (SANs) so mobile clients can connect:
+When running Aptove CLI inside a Docker or Apple Native container, Aptove CLI's local IP is the container's internal virtual IP — not your machine's LAN IP. Set `advertise_addr` in `common.toml` to override both the QR code URL **and** the TLS certificate's Subject Alternative Names (SANs) so mobile clients can connect:
 
 ```toml
 advertise_addr = "192.168.1.50"
@@ -203,7 +203,7 @@ wss://192.168.1.100:8765?token=<authToken>
 
 ### TLS Certificate
 
-The bridge generates a self-signed TLS certificate on first run and saves it as `cert.pem` / `key.pem` in the config directory. The certificate includes the following Subject Alternative Names (SANs):
+Aptove CLI generates a self-signed TLS certificate on first run and saves it as `cert.pem` / `key.pem` in the config directory. The certificate includes the following Subject Alternative Names (SANs):
 
 - `localhost` and `127.0.0.1` (always)
 - The machine's detected local network IP (always, when available)
@@ -211,7 +211,7 @@ The bridge generates a self-signed TLS certificate on first run and saves it as 
 
 The certificate fingerprint is included in the QR pairing URL and must be validated by the mobile app before trusting the connection. The cert is reused across restarts; it is only regenerated when the SANs change (e.g. a new `advertise_addr` is set) or when `cert.pem` / `key.pem` are deleted.
 
-The current extra SANs are persisted in `cert-extra-sans.json` so the bridge can detect when they change and regenerate the certificate automatically.
+The current extra SANs are persisted in `cert-extra-sans.json` so Aptove CLI can detect when they change and regenerate the certificate automatically.
 
 **TLS-related files in the config directory:**
 
@@ -256,11 +256,11 @@ curl -k "https://192.168.1.100:8765/pair/local?code=847291"
 
 ### Phone can't connect after restart
 
-The bridge URL (including port) is embedded in the QR code and stored on the phone after pairing. If the port changed since the last pairing — for example because another bridge instance was running at the same time — the stored URL is stale.
+The Aptove CLI URL (including port) is embedded in the QR code and stored on the phone after pairing. If the port changed since the last pairing — for example because another Aptove CLI instance was running at the same time — the stored URL is stale.
 
-Re-scan the QR code from the bridge TUI (`/qr`). The app will update the existing agent's connection address automatically without creating a duplicate entry.
+Re-scan the QR code from the Aptove CLI TUI (`/qr`). The app will update the existing agent's connection address automatically without creating a duplicate entry.
 
-To prevent the port from changing between restarts, make sure each bridge instance has a unique port set in its `common.toml`:
+To prevent the port from changing between restarts, make sure each Aptove CLI instance has a unique port set in its `common.toml`:
 
 ```toml
 [transports.local]
@@ -269,7 +269,7 @@ port    = 8765   # unique per folder
 ```
 
 ### "Connection refused"
-- Ensure the bridge is running
+- Ensure Aptove CLI is running
 - Check firewall settings allow the configured port (default `8765`)
 - Verify `bind_address` is `"0.0.0.0"` in `common.toml` (default)
 
