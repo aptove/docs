@@ -1,0 +1,34 @@
+---
+title: "Permissions"
+description: "iOS permissions the Aptove app requests and why each one is needed."
+---
+
+The Aptove app requests the following iOS permissions. Each one is only used for the purpose described — the app does not access sensors or data in the background beyond what is listed here.
+
+## Permissions reference
+
+| Permission | When requested | Why it's needed |
+|---|---|---|
+| **Camera** | First QR scan | Scan the pairing QR code displayed by the bridge to establish a connection. |
+| **Microphone** | First voice input | Record audio for speech-to-text during voice message dictation. |
+| **Speech Recognition** | First voice input | Convert recorded audio to text using on-device speech recognition. |
+| **Photo Library** | First image attachment | Access photos when you choose to attach an image to a chat message or set an agent avatar. |
+| **Push Notifications** | First app launch | Deliver notifications when the agent sends a message while the app is in the background. |
+
+## Notes
+
+### Camera
+
+Used exclusively for QR code scanning during the initial pairing flow. The camera is not accessed at any other time.
+
+### Microphone and Speech Recognition
+
+Both permissions are requested together the first time you tap the microphone button. Speech recognition runs on-device on iOS 16 and later — audio is not sent to any external server.
+
+### Photo Library
+
+The app uses the system photo picker, which lets you select images without granting broad library access. On iOS 14 and later you can grant access to specific photos only rather than your entire library.
+
+### Push Notifications
+
+Notifications are delivered through APNs (Apple Push Notification service). They are only sent when your bridge has a push relay configured and you have completed the pairing flow. The app does not use notifications for marketing or analytics.

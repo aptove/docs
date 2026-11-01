@@ -50,7 +50,8 @@
         "mobile-app/overview",
         "mobile-app/pairing",
         "mobile-app/features",
-        "mobile-app/voice-input"
+        "mobile-app/voice-input",
+        "mobile-app/permissions"
       ]
     },
     {
