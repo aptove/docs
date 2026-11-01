@@ -24,7 +24,7 @@ When the bridge spawns a fresh agent process (first connection, no prior session
 }
 ```
 
-**Trigger:** Only fires on first connection (`needs_init_capture = true`). On reconnects the session intercept handles `session/load` differently (see [Session Resumption](/bridge/advanced/session-resumption)).
+**Trigger:** Only fires on first connection (`needs_init_capture = true`). On reconnects the session intercept handles `session/load` differently (see [Session Resumption](/aptove/advanced/session-resumption)).
 
 **Code location:** `core/src/bridge.rs` ~lines 1330–1370, Task 1 loop.
 

@@ -1,6 +1,6 @@
 ---
 title: "Installation"
-description: "How to install the Aptove Bridge on your machine."
+description: "How to install the Aptove on your machine."
 ---
 
 ## Shell installer (recommended)
@@ -8,13 +8,13 @@ description: "How to install the Aptove Bridge on your machine."
 The quickest way to install on macOS and Linux. Requires no Node.js or Rust toolchain.
 
 ```bash
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/aptove/bridge/releases/latest/download/aptove-bridge-installer.sh | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/aptove/aptove/releases/latest/download/aptove-installer.sh | sh
 ```
 
 On Windows (PowerShell):
 
 ```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://github.com/aptove/bridge/releases/latest/download/aptove-bridge-installer.ps1 | iex"
+powershell -ExecutionPolicy ByPass -c "irm https://github.com/aptove/aptove/releases/latest/download/aptove-installer.ps1 | iex"
 ```
 
 ## Build from source
@@ -22,7 +22,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://github.com/aptove/bridge/rele
 If you have a [Rust toolchain](https://rustup.rs) installed:
 
 ```bash
-git clone https://github.com/aptove/bridge
+git clone https://github.com/aptove/aptove
 cd bridge
 cargo build --release
 ./target/release/bridge

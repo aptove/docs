@@ -1,6 +1,6 @@
 ---
 title: "Overview"
-description: "The Aptove Bridge is a local Rust binary that connects your AI agent to the Aptove mobile app."
+description: "The Aptove is a local Rust binary that connects your AI agent to the Aptove mobile app."
 ---
 
 ## What is the bridge?
@@ -15,7 +15,7 @@ The bridge is a small, self-contained binary that runs on any machine where your
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                  aptove-bridge                   │
+│                     aptove                       │
 │                                                  │
 │   WebSocket server ◄──── Transport layer         │
 │          │                (local / Tailscale)    │
@@ -28,12 +28,12 @@ The bridge is a small, self-contained binary that runs on any machine where your
 
 ### Pre-built binary
 
-Download the latest release for your platform from the [GitHub releases page](https://github.com/aptove/bridge/releases).
+Download the latest release for your platform from the [GitHub releases page](https://github.com/aptove/aptove/releases).
 
 ### Build from source
 
 ```bash
-git clone https://github.com/aptove/bridge
+git clone https://github.com/aptove/aptove
 cd bridge
 cargo build --release
 # binary is at target/release/bridge
@@ -41,7 +41,7 @@ cargo build --release
 
 ## First run
 
-Running `bridge` with no arguments starts the interactive TUI. On first launch, the setup wizard appears and walks you through:
+Running `aptove` with no arguments starts the interactive TUI. On first launch, the setup wizard appears and walks you through:
 
 1. Choosing an agent command (e.g. `copilot --acp`)
 2. Picking a transport (local or Tailscale)
@@ -51,16 +51,16 @@ After setup, the bridge starts and immediately shows a QR code for pairing your 
 
 ## Running from a folder
 
-The bridge is folder-aware. Every time you run `bridge` it looks for (or creates) a `.aptove-bridge/` directory **in the current working directory**. All configuration, credentials, and certificates for that instance live there.
+The bridge is folder-aware. Every time you run `aptove` it looks for (or creates) a `.aptove/` directory **in the current working directory**. All configuration, credentials, and certificates for that instance live there.
 
 ```
 ~/projects/
   work-agent/
-    .aptove-bridge/      ← config for this bridge instance
+    .aptove/      ← config for this bridge instance
       common.toml
       cert.pem / key.pem
   personal-agent/
-    .aptove-bridge/      ← separate config, separate identity
+    .aptove/      ← separate config, separate identity
       common.toml
       cert.pem / key.pem
 ```
@@ -79,9 +79,9 @@ You can run as many bridge instances as you like simultaneously — one per fold
 - Each appears as a separate agent entry in the Aptove mobile app.
 - Only one bridge instance may run from the same folder at a time (enforced by a per-folder lock file).
 
-Each bridge needs a unique TCP port. By default all instances try port **8765**. If that port is already taken, the bridge automatically finds the next free port in the range 8765–8815, saves it to `common.toml`, and starts normally. See the [Local Transport](/bridge/local-transport#port-conflict-resolution) docs for details.
+Each bridge needs a unique TCP port. By default all instances try port **8765**. If that port is already taken, the bridge automatically finds the next free port in the range 8765–8815, saves it to `common.toml`, and starts normally. See the [Local Transport](/aptove/local-transport#port-conflict-resolution) docs for details.
 
 ## Configuration file
 
-All settings are stored in `common.toml` inside the `.aptove-bridge/` directory created wherever you ran the bridge. See [Configuration](/bridge/configuration) for the full reference.
+All settings are stored in `common.toml` inside the `.aptove/` directory created wherever you ran the bridge. See [Configuration](/aptove/configuration) for the full reference.
 

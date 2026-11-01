@@ -37,36 +37,36 @@
             "pages": ["introduction"]
           },
           {
-            "group": "Bridge",
+            "group": "Aptove",
             "pages": [
-              "bridge/overview",
-              "bridge/install",
-              "bridge/agent",
-              "bridge/configuration",
+              "aptove/overview",
+              "aptove/install",
+              "aptove/agent",
+              "aptove/configuration",
               {
                 "group": "Transports",
                 "pages": [
-                  "bridge/transports",
-                  "bridge/local-transport",
-                  "bridge/tailscale-transport"
+                  "aptove/transports",
+                  "aptove/local-transport",
+                  "aptove/tailscale-transport"
                 ]
               },
-              "bridge/sessions",
-              "bridge/slash-commands",
-              "bridge/memory",
-              "bridge/logs",
-              "bridge/tui",
-              "bridge/keep-alive",
-              "bridge/security",
+              "aptove/sessions",
+              "aptove/slash-commands",
+              "aptove/memory",
+              "aptove/logs",
+              "aptove/tui",
+              "aptove/keep-alive",
+              "aptove/security",
               {
                 "group": "Advanced",
                 "pages": [
-                  "bridge/advanced/agent-id",
-                  "bridge/advanced/memory-injection",
-                  "bridge/advanced/session-resumption",
-                  "bridge/advanced/session-load-error",
-                  "bridge/advanced/commands-injection",
-                  "bridge/advanced/memory-consolidation"
+                  "aptove/advanced/agent-id",
+                  "aptove/advanced/memory-injection",
+                  "aptove/advanced/session-resumption",
+                  "aptove/advanced/session-load-error",
+                  "aptove/advanced/commands-injection",
+                  "aptove/advanced/memory-consolidation"
                 ]
               }
             ]

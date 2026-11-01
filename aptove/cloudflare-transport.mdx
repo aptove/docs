@@ -50,7 +50,7 @@ This guide covers configuring the bridge to accept connections from iOS and Andr
 
 ## One-Time Setup
 
-Run `bridge` to launch the TUI. The setup wizard runs automatically on first launch (or whenever the Cloudflare transport is not yet configured). It prompts for four values:
+Run `aptove` to launch the TUI. The setup wizard runs automatically on first launch (or whenever the Cloudflare transport is not yet configured). It prompts for four values:
 
 | Field | Description | Example |
 |-------|-------------|---------|
@@ -66,11 +66,11 @@ The wizard automatically:
 4. Issues a Service Token (clientId + clientSecret)
 5. Configures tunnel ingress rules
 6. Writes `~/.cloudflared/<tunnel-id>.json` (tunnel credentials)
-7. Saves all credentials to `.aptove-bridge/common.toml` under `[transports.cloudflare]` with `enabled = true`
+7. Saves all credentials to `.aptove/common.toml` under `[transports.cloudflare]` with `enabled = true`
 
-On every `bridge` startup, a per-project `.aptove-bridge/cloudflared.yml` is written with the correct local port. This ensures multiple bridges running from different project folders do not interfere with each other.
+On every `aptove` startup, a per-project `.aptove/cloudflared.yml` is written with the correct local port. This ensures multiple bridges running from different project folders do not interfere with each other.
 
-After setup, verify `.aptove-bridge/common.toml` contains:
+After setup, verify `.aptove/common.toml` contains:
 
 ```toml
 [transports.cloudflare]
@@ -88,12 +88,12 @@ client_secret = "xxxxx"
 ## Starting the Bridge
 
 ```bash
-bridge
+aptove
 ```
 
-Transport selection is read from `.aptove-bridge/common.toml` — no additional flags are needed. The bridge:
+Transport selection is read from `.aptove/common.toml` — no additional flags are needed. The bridge:
 
-1. Loads Cloudflare credentials from `.aptove-bridge/common.toml`
+1. Loads Cloudflare credentials from `.aptove/common.toml`
 2. Checks Service Token expiry and auto-rotates if within 30 days
 3. Launches `cloudflared tunnel run` as a managed child process
 4. Waits up to 30 seconds for the tunnel to become active
@@ -103,7 +103,7 @@ Transport selection is read from `.aptove-bridge/common.toml` — no additional 
 
 ## Running Multiple Bridges Simultaneously
 
-You can run bridge instances from different project folders at the same time. Each folder is fully independent — it has its own `.aptove-bridge/common.toml`, its own agent identity, and its own `cloudflared.yml`.
+You can run bridge instances from different project folders at the same time. Each folder is fully independent — it has its own `.aptove/common.toml`, its own agent identity, and its own `cloudflared.yml`.
 
 ### Local and Tailscale transports
 
@@ -118,7 +118,7 @@ Cloudflare has an additional constraint: **a DNS CNAME record can only point to 
 | `~/code/project-a` | `project-a` | `https://project-a.example.com` |
 | `~/code/project-b` | `project-b` | `https://project-b.example.com` |
 
-Run `bridge` once in each folder — the setup wizard will prompt for a unique subdomain.
+Run `aptove` once in each folder — the setup wizard will prompt for a unique subdomain.
 
 Each setup creates a separate Cloudflare tunnel, DNS record, and Access Application. The two bridges then run completely independently and appear as separate agents in the mobile app.
 
@@ -128,10 +128,10 @@ Each setup creates a separate Cloudflare tunnel, DNS record, and Access Applicat
 
 ## Service Token Auto-Rotation
 
-Service Tokens are issued with a 1-year lifetime. The bridge tracks the issuance date in `.aptove-bridge/common.toml`. When fewer than 30 days remain:
+Service Tokens are issued with a 1-year lifetime. The bridge tracks the issuance date in `.aptove/common.toml`. When fewer than 30 days remain:
 
 1. The bridge automatically issues a new Service Token via the Cloudflare API
-2. Saves the new `clientId`/`clientSecret` to `.aptove-bridge/common.toml`
+2. Saves the new `clientId`/`clientSecret` to `.aptove/common.toml`
 3. Shows the QR code with updated credentials
 
 **The user must re-scan the QR code once after rotation** so the app picks up the new credentials. The bridge logs:
@@ -150,7 +150,7 @@ Two independent auth layers protect every connection:
 | Layer | Credential | Lifetime | Checked by |
 |-------|-----------|---------|------------|
 | Cloudflare Access | `CF-Access-Client-Id` + `CF-Access-Client-Secret` | 1 year (auto-rotated) | Cloudflare Edge |
-| Bridge auth | `X-Bridge-Token` | Permanent (until `.aptove-bridge/common.toml` deleted) | Bridge WebSocket handler |
+| Bridge auth | `X-Bridge-Token` | Permanent (until `.aptove/common.toml` deleted) | Bridge WebSocket handler |
 
 The app must present both. Cloudflare blocks unauthenticated requests before they reach the bridge.
 
@@ -168,24 +168,24 @@ After scanning the QR code, the app stores in the iOS Keychain / Android Encrypt
 | `clientSecret` | `CF-Access-Client-Secret` header value |
 | `authToken` | `X-Bridge-Token` header value |
 
-`tunnel_secret` (in `.aptove-bridge/common.toml`) is used exclusively by `cloudflared` on the server side and is never sent to the mobile app.
+`tunnel_secret` (in `.aptove/common.toml`) is used exclusively by `cloudflared` on the server side and is never sent to the mobile app.
 
 ---
 
 ## Forcing Re-Setup
 
-To reprovision all Cloudflare infrastructure from scratch, delete the Cloudflare section from `.aptove-bridge/common.toml` (or delete the file entirely), then run `bridge` again — the setup wizard will detect missing config and re-run:
+To reprovision all Cloudflare infrastructure from scratch, delete the Cloudflare section from `.aptove/common.toml` (or delete the file entirely), then run `aptove` again — the setup wizard will detect missing config and re-run:
 
 ```bash
-rm .aptove-bridge/common.toml
-bridge
+rm .aptove/common.toml
+aptove
 ```
 
 ---
 
 ## Security Notes
 
-- `.aptove-bridge/common.toml` contains the Cloudflare API token, Service Token secret, and bridge auth token. File permissions are set to `0600` automatically.
+- `.aptove/common.toml` contains the Cloudflare API token, Service Token secret, and bridge auth token. File permissions are set to `0600` automatically.
 - **The Cloudflare QR code embeds permanent credentials** (`clientId`, `clientSecret`, `authToken`). Unlike the Local and Tailscale transports which use a one-time 6-digit pairing code that expires in 60 seconds, the Cloudflare QR is a static JSON payload. Anyone who captures the QR (photo, screenshot, shoulder surfing) gains permanent access to the bridge from anywhere on the internet until credentials are manually rotated. The bridge prints a warning each time the QR is displayed — treat it like a password.
 - The Service Token secret (`clientSecret`) is only available at issuance time and is never retrievable from the Cloudflare API afterwards. If lost, the bridge deletes the old token and issues a fresh one automatically on the next run. Re-scan the QR code after rotation to update the app.
 
@@ -196,13 +196,13 @@ bridge
 | Symptom | Likely Cause | Fix |
 |---------|-------------|-----|
 | `cloudflared not found on PATH` | `cloudflared` not installed | Install per Prerequisites above |
-| `cloudflared did not become ready within 30 seconds` | Tunnel misconfigured or network issue | Check `.aptove-bridge/cloudflared.yml`; run `cloudflared tunnel run --loglevel debug` manually |
+| `cloudflared did not become ready within 30 seconds` | Tunnel misconfigured or network issue | Check `.aptove/cloudflared.yml`; run `cloudflared tunnel run --loglevel debug` manually |
 | `Authentication error (code 10000)` during setup | API token missing `Access: Service Tokens: Edit` permission | Edit the token in Cloudflare dashboard and add that permission |
-| App gets "bad response from server" | Bridge not running or Service Token expired | Ensure `bridge` is running; re-scan QR if token was rotated |
-| App connects but times out | Wrong port in ingress rule | Re-run `bridge` — the port in `.aptove-bridge/cloudflared.yml` is rewritten automatically on every startup |
+| App gets "bad response from server" | Bridge not running or Service Token expired | Ensure `aptove` is running; re-scan QR if token was rotated |
+| App connects but times out | Wrong port in ingress rule | Re-run `aptove` — the port in `.aptove/cloudflared.yml` is rewritten automatically on every startup |
 | "403 Forbidden" from mobile | Missing `CF-Access-Client-Id`/`CF-Access-Client-Secret` headers | Re-scan the QR code |
 | `Another bridge instance is already running from this folder` | A bridge is already running in this project folder | Stop the existing bridge first; only one instance per folder is allowed |
-| Second bridge cannot connect via Cloudflare | Both bridges share the same subdomain | Run `bridge` in each folder with a unique subdomain configured in the wizard; see [Running Multiple Bridges](#running-multiple-bridges-simultaneously) |
+| Second bridge cannot connect via Cloudflare | Both bridges share the same subdomain | Run `aptove` in each folder with a unique subdomain configured in the wizard; see [Running Multiple Bridges](#running-multiple-bridges-simultaneously) |
 
 ---
 

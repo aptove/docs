@@ -23,7 +23,7 @@ The `tailscale-serve` mode uses `tailscale serve` to proxy HTTPS on port 443 to 
 
 ## Configuration
 
-Enable Tailscale in `.aptove-bridge/common.toml`:
+Enable Tailscale in `.aptove/common.toml`:
 
 ```toml
 [transports.tailscale-serve]
@@ -37,10 +37,10 @@ No port or TLS fields needed — Tailscale handles HTTPS on port 443 and routes 
 ## Starting the Bridge
 
 ```bash
-bridge
+aptove
 ```
 
-Transport mode is read from `.aptove-bridge/common.toml` — no extra flags needed.
+Transport mode is read from `.aptove/common.toml` — no extra flags needed.
 
 ---
 

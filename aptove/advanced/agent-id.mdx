@@ -11,7 +11,7 @@ Every ACP session is wrapped by a bridge-specific protocol layer that operates i
 
 The bridge binds to a TCP port (e.g. `0.0.0.0:8765`). IP:port is a transport address — it can be reused by any bridge that starts on the same machine. If a new bridge starts at the same address that a previous bridge used, the iOS app's auto-connect logic would silently attach the old agent to the new bridge. The old agent would then send its stored `cwd` to the wrong bridge, making the AI assistant operate in the wrong project directory.
 
-`bridgeAgentId` solves this. It is a stable UUID stored in `common.toml` under `.aptove-bridge/` in the project directory. Each project directory gets a different UUID. The UUID survives restarts of the same bridge but changes if you move to a different directory.
+`bridgeAgentId` solves this. It is a stable UUID stored in `common.toml` under `.aptove/` in the project directory. Each project directory gets a different UUID. The UUID survives restarts of the same bridge but changes if you move to a different directory.
 
 | Key | Value |
 |-----|-------|

@@ -5,19 +5,19 @@ description: "Where the bridge writes log files and how to configure their size 
 
 ## File location
 
-The bridge writes all log output to files inside the `.aptove-bridge/logs/` directory, created automatically in the working directory where the bridge is launched:
+The bridge writes all log output to files inside the `.aptove/logs/` directory, created automatically in the working directory where the bridge is launched:
 
 ```
-.aptove-bridge/
+.aptove/
 └── logs/
-    ├── bridge.log        ← current log file
-    ├── bridge.log.1      ← previous (most recent rotation)
-    ├── bridge.log.2
-    ├── bridge.log.3
-    └── bridge.log.4
+    ├── aptove.log        ← current log file
+    ├── aptove.log.1      ← previous (most recent rotation)
+    ├── aptove.log.2
+    ├── aptove.log.3
+    └── aptove.log.4
 ```
 
-`bridge.log` is always the active file. When it reaches the size limit it is rotated: each `.N` file shifts to `.N+1`, `bridge.log` becomes `bridge.log.1`, and a fresh `bridge.log` is opened. The oldest file is deleted to keep the total count within the configured limit.
+`aptove.log` is always the active file. When it reaches the size limit it is rotated: each `.N` file shifts to `.N+1`, `aptove.log` becomes `aptove.log.1`, and a fresh `aptove.log` is opened. The oldest file is deleted to keep the total count within the configured limit.
 
 ## Default settings
 
@@ -58,4 +58,4 @@ Changes take effect on the next bridge start.
 
 ## Log level
 
-The files capture everything at **DEBUG** level and above (TRACE events are omitted to keep file sizes reasonable). The minimum level shown in the TUI is controlled separately by the `log_level` field — see [Configuration](/bridge/configuration).
+The files capture everything at **DEBUG** level and above (TRACE events are omitted to keep file sizes reasonable). The minimum level shown in the TUI is controlled separately by the `log_level` field — see [Configuration](/aptove/configuration).
