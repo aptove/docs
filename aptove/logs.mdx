@@ -1,11 +1,11 @@
 ---
 title: "Log Files"
-description: "Where Aptove CLI writes log files and how to configure their size and retention."
+description: "Where Aptove Router writes log files and how to configure their size and retention."
 ---
 
 ## File location
 
-Aptove CLI writes all log output to files inside the `.aptove/logs/` directory, created automatically in the working directory where Aptove CLI is launched:
+Aptove Router writes all log output to files inside the `.aptove/logs/` directory, created automatically in the working directory where Aptove Router is launched:
 
 ```
 .aptove/
@@ -26,7 +26,7 @@ Aptove CLI writes all log output to files inside the `.aptove/logs/` directory, 
 | `log_file_max_mb` | `10` | Maximum size of each log file in MB before rotation. |
 | `log_file_count` | `5` | Total number of files to keep (active + rotated). |
 
-With the defaults Aptove CLI keeps at most **50 MB** of log history on disk (5 files × 10 MB each).
+With the defaults Aptove Router keeps at most **50 MB** of log history on disk (5 files × 10 MB each).
 
 ## Configuring in common.toml
 
@@ -54,7 +54,7 @@ log_file_max_mb = 5    # 5 MB per file
 log_file_count  = 2    # keep only current + 1 backup → up to 10 MB total
 ```
 
-Changes take effect on the next Aptove CLI start.
+Changes take effect on the next Aptove Router start.
 
 ## Log level
 

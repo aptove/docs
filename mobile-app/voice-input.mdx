@@ -48,7 +48,7 @@ After speech-to-text, the raw transcript is forwarded to the connected agent wit
 - Add correct punctuation and capitalisation
 - Correct grammar
 
-The correction request includes the spoken language so the agent can apply language-appropriate rules. This step requires an active Aptove CLI connection — if Aptove CLI is unreachable, the uncorrected transcript is placed in the input field instead.
+The correction request includes the spoken language so the agent can apply language-appropriate rules. This step requires an active Aptove Router connection — if Aptove Router is unreachable, the uncorrected transcript is placed in the input field instead.
 
 ## Supported languages
 
@@ -76,7 +76,7 @@ Both permissions can be managed in **iOS Settings → Aptove** at any time.
 
 Speech recognition works offline on iOS 16+ for supported languages. On older devices or for languages without an on-device model, iOS may require a brief internet connection to perform recognition.
 
-The AI correction step always requires an active Aptove CLI connection, as it is processed by the connected agent.
+The AI correction step always requires an active Aptove Router connection, as it is processed by the connected agent.
 
 ## Troubleshooting
 
@@ -87,7 +87,7 @@ Check that both Microphone and Speech Recognition permissions are granted in iOS
 Go to Settings → Voice Language and select the correct locale. Make sure the locale matches the language you are speaking — e.g. select **Spanish (Mexico)** rather than **Spanish (Spain)** if you are speaking Latin American Spanish.
 
 **Transcript correction spinner never completes**
-The Aptove CLI connection may have dropped. Check the agent's connection status on the home screen and reconnect if needed.
+The Aptove Router connection may have dropped. Check the agent's connection status on the home screen and reconnect if needed.
 
 **Language not in the list**
 The list is limited to languages iOS supports on your specific device. If a language is missing, it is not available for on-device speech recognition on your iOS version.

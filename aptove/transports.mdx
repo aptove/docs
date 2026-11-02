@@ -1,13 +1,13 @@
 ---
 title: "Overview"
-description: "How to connect the Aptove app to Aptove CLI from different network locations."
+description: "How to connect the Aptove app to Aptove Router from different network locations."
 ---
 
-A transport is the network path the mobile app uses to reach Aptove CLI. You can enable multiple transports simultaneously — each one starts its own WebSocket server and gets its own pairing QR code.
+A transport is the network path the mobile app uses to reach Aptove Router. You can enable multiple transports simultaneously — each one starts its own WebSocket server and gets its own pairing QR code.
 
 ## Local (same network)
 
-The simplest option. Aptove CLI listens on a TCP port on your LAN. The phone must be on the same Wi-Fi network (or connected via USB/hotspot).
+The simplest option. Aptove Router listens on a TCP port on your LAN. The phone must be on the same Wi-Fi network (or connected via USB/hotspot).
 
 ```toml
 [transports.local]
@@ -16,13 +16,13 @@ port = 8765   # default
 tls = true    # recommended
 ```
 
-**TLS:** Aptove CLI auto-generates a self-signed certificate on first run. The pairing QR code includes the certificate fingerprint (`fp=SHA256:...`) so the app can pin it — no CA required.
+**TLS:** Aptove Router auto-generates a self-signed certificate on first run. The pairing QR code includes the certificate fingerprint (`fp=SHA256:...`) so the app can pin it — no CA required.
 
 **When to use:** Development, home use, or any time your phone and machine are on the same network.
 
 ## Tailscale
 
-Exposes Aptove CLI through [Tailscale Serve](https://tailscale.com/kb/1242/tailscale-serve), which makes Aptove CLI reachable on your tailnet.
+Exposes Aptove Router through [Tailscale Serve](https://tailscale.com/kb/1242/tailscale-serve), which makes Aptove Router reachable on your tailnet.
 
 ```toml
 [transports.tailscale-serve]
@@ -30,7 +30,7 @@ enabled = true
 port = 8766   # default
 ```
 
-Aptove CLI calls `tailscale serve` to set up the reverse proxy. You must have Tailscale installed and authenticated on the machine.
+Aptove Router calls `tailscale serve` to set up the reverse proxy. You must have Tailscale installed and authenticated on the machine.
 
 **When to use:** When all your devices are already on a tailnet; provides encrypted, authenticated access without any cloud credentials.
 

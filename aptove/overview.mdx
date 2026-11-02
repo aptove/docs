@@ -1,15 +1,15 @@
 ---
 title: "Overview"
-description: "Aptove CLI is a local Rust binary that connects your AI agent to the Aptove mobile app."
+description: "Aptove Router is a local Rust binary that connects your AI agent to the Aptove mobile app."
 ---
 
-## What is Aptove CLI?
+## What is Aptove Router?
 
-Aptove CLI is a small, self-contained binary that runs on any machine where your AI agent lives — your laptop, a home server, or a cloud VM. It does three things:
+Aptove Router is a small, self-contained binary that runs on any machine where your AI agent lives — your laptop, a home server, or a cloud VM. It does three things:
 
 - **Launches your agent** as a child process and pipes ACP messages over stdin/stdout.
 - **Exposes a WebSocket server** so the Aptove mobile app can connect and exchange messages.
-- **Manages transports** so you can reach Aptove CLI whether you're on the same Wi-Fi network or on the other side of the world.
+- **Manages transports** so you can reach Aptove Router whether you're on the same Wi-Fi network or on the other side of the world.
 
 ## Architecture
 
@@ -47,16 +47,16 @@ Running `aptove` with no arguments starts the interactive TUI. On first launch, 
 2. Picking a transport (local or Tailscale)
 3. Configuring any transport-specific credentials
 
-After setup, Aptove CLI starts and immediately shows a QR code for pairing your phone.
+After setup, Aptove Router starts and immediately shows a QR code for pairing your phone.
 
 ## Running from a folder
 
-Aptove CLI is folder-aware. Every time you run `aptove` it looks for (or creates) a `.aptove/` directory **in the current working directory**. All configuration, credentials, and certificates for that instance live there.
+Aptove Router is folder-aware. Every time you run `aptove` it looks for (or creates) a `.aptove/` directory **in the current working directory**. All configuration, credentials, and certificates for that instance live there.
 
 ```
 ~/projects/
   work-agent/
-    .aptove/      ← config for this Aptove CLI instance
+    .aptove/      ← config for this Aptove Router instance
       common.toml
       cert.pem / key.pem
   personal-agent/
@@ -65,7 +65,7 @@ Aptove CLI is folder-aware. Every time you run `aptove` it looks for (or creates
       cert.pem / key.pem
 ```
 
-You can also point Aptove CLI at a specific config directory with the `--config-dir` flag:
+You can also point Aptove Router at a specific config directory with the `--config-dir` flag:
 
 ```bash
 aptove --config-dir ~/my-configs/work
@@ -73,15 +73,15 @@ aptove --config-dir ~/my-configs/work
 
 ## Multiple instances on the same machine
 
-You can run as many Aptove CLI instances as you like simultaneously — one per folder — and they will operate completely independently:
+You can run as many Aptove Router instances as you like simultaneously — one per folder — and they will operate completely independently:
 
 - Each instance has its own agent identity (`agentId`), auth token, and TLS certificate.
 - Each appears as a separate agent entry in the Aptove mobile app.
-- Only one Aptove CLI instance may run from the same folder at a time (enforced by a per-folder lock file).
+- Only one Aptove Router instance may run from the same folder at a time (enforced by a per-folder lock file).
 
-Each Aptove CLI instance needs a unique TCP port. By default all instances try port **8765**. If that port is already taken, Aptove CLI automatically finds the next free port in the range 8765–8815, saves it to `common.toml`, and starts normally. See the [Local Transport](/aptove/local-transport#port-conflict-resolution) docs for details.
+Each Aptove Router instance needs a unique TCP port. By default all instances try port **8765**. If that port is already taken, Aptove Router automatically finds the next free port in the range 8765–8815, saves it to `common.toml`, and starts normally. See the [Local Transport](/aptove/local-transport#port-conflict-resolution) docs for details.
 
 ## Configuration file
 
-All settings are stored in `common.toml` inside the `.aptove/` directory created wherever you ran Aptove CLI. See [Configuration](/aptove/configuration) for the full reference.
+All settings are stored in `common.toml` inside the `.aptove/` directory created wherever you ran Aptove Router. See [Configuration](/aptove/configuration) for the full reference.
 

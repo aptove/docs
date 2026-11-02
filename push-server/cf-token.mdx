@@ -44,7 +44,7 @@ Response is cached for 1 hour (`Cache-Control: public, max-age=3600`).
 
 ### `POST /token`
 
-Exchange client credentials for a JWT. This is the only endpoint Aptove CLI calls.
+Exchange client credentials for a JWT. This is the only endpoint Aptove Router calls.
 
 **Request body:**
 
@@ -173,4 +173,4 @@ To rotate the RS256 signing key:
 2. Update the secret: `npx wrangler secret put RS_PRIVATE_KEY`
 3. Deploy: `npx wrangler deploy` (or push a tag for CI)
 
-After rotation, the JWKS `kid` changes. Any JWTs issued with the old key will fail verification. `cf-push-relay` detects the unknown `kid`, invalidates its JWKS cache, and re-fetches automatically. Aptove CLI re-fetches a new JWT on the next push request.
+After rotation, the JWKS `kid` changes. Any JWTs issued with the old key will fail verification. `cf-push-relay` detects the unknown `kid`, invalidates its JWKS cache, and re-fetches automatically. Aptove Router re-fetches a new JWT on the next push request.

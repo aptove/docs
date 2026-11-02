@@ -1,15 +1,15 @@
 ---
 title: "Synthetic session/load Error on Fresh Agents"
-description: "When a fresh agent receives a session/load request, Aptove CLI fabricates an error response without involving the agent."
+description: "When a fresh agent receives a session/load request, Aptove Router fabricates an error response without involving the agent."
 ---
 
 <Warning>
-  This page documents a place where Aptove CLI manufactures an ACP error response that the agent did not produce. It exists for review — the behavior may be kept, refactored, or removed based on that review.
+  This page documents a place where Aptove Router manufactures an ACP error response that the agent did not produce. It exists for review — the behavior may be kept, refactored, or removed based on that review.
 </Warning>
 
 ## What it does
 
-When Aptove CLI spawns a fresh agent process (first connection, no prior session) and the client sends a `session/load` request, Aptove CLI fabricates a JSON-RPC error response and injects it back to the client. The `session/load` message is never forwarded to the agent.
+When Aptove Router spawns a fresh agent process (first connection, no prior session) and the client sends a `session/load` request, Aptove Router fabricates a JSON-RPC error response and injects it back to the client. The `session/load` message is never forwarded to the agent.
 
 **Synthesized error:**
 ```json
@@ -30,23 +30,23 @@ When Aptove CLI spawns a fresh agent process (first connection, no prior session
 
 ## Why it was added
 
-Some agents (e.g. Goose) hang or behave unexpectedly when they receive a `session/load` for a session ID they don't recognize. By returning an error immediately, Aptove CLI lets the client fall back to `session/new` and start a clean session without the agent entering an undefined state.
+Some agents (e.g. Goose) hang or behave unexpectedly when they receive a `session/load` for a session ID they don't recognize. By returning an error immediately, Aptove Router lets the client fall back to `session/new` and start a clean session without the agent entering an undefined state.
 
 ## Request flow
 
 ```
 FIRST CONNECTION (fresh agent, client has a stored session ID)
 
-Client ──session/load──► Aptove CLI (intercepts)
-                         Aptove CLI ──synthesized error──► Client
-Client ──session/new──► Aptove CLI ──session/new──► Agent (normal flow)
+Client ──session/load──► Aptove Router (intercepts)
+                         Aptove Router ──synthesized error──► Client
+Client ──session/new──► Aptove Router ──session/new──► Agent (normal flow)
 ```
 
 ## Trade-offs
 
 | Concern | Detail |
 |---------|--------|
-| Aptove CLI manufactures errors | The error the client receives did not come from the agent. |
+| Aptove Router manufactures errors | The error the client receives did not come from the agent. |
 | Blocks agents that support session/load on first connect | If an agent legitimately supports loading an existing session on first connection, this intercept prevents it from working. |
 | Agent-specific workaround | This was added to work around specific agent behavior (Goose). A well-behaved agent that returns a proper "session not found" error would not need this. |
 

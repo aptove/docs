@@ -1,26 +1,26 @@
 ---
 title: "Pairing"
-description: "How to connect the Aptove app to Aptove CLI using QR codes or manual entry."
+description: "How to connect the Aptove app to Aptove Router using QR codes or manual entry."
 ---
 
 ## Overview
 
-Pairing is the one-time process of exchanging connection credentials between the app and Aptove CLI. After pairing, the app stores the credentials securely and reconnects automatically on every launch.
+Pairing is the one-time process of exchanging connection credentials between the app and Aptove Router. After pairing, the app stores the credentials securely and reconnects automatically on every launch.
 
 ## QR pairing (recommended)
 
 <Steps>
   <Step title="Show the QR code">
-    Aptove CLI displays a QR code automatically after the setup wizard, or you can show it at any time by typing `/qr` in the Aptove CLI TUI.
+    Aptove Router displays a QR code automatically after the setup wizard, or you can show it at any time by typing `/qr` in the Aptove Router TUI.
   </Step>
   <Step title="Scan the code">
-    In the Aptove app, tap **Add Agent**, then point your camera at the QR code. The app decodes the pairing URL, contacts Aptove CLI, and exchanges credentials.
+    In the Aptove app, tap **Add Agent**, then point your camera at the QR code. The app decodes the pairing URL, contacts Aptove Router, and exchanges credentials.
   </Step>
   <Step title="Confirm the pairing code">
-    Aptove CLI shows a 6-digit one-time code. The app also shows the same code — verify they match and confirm.
+    Aptove Router shows a 6-digit one-time code. The app also shows the same code — verify they match and confirm.
   </Step>
   <Step title="Done">
-    The agent appears in your list with a green connected indicator. Aptove CLI starts your agent process and the chat is ready.
+    The agent appears in your list with a green connected indicator. Aptove Router starts your agent process and the chat is ready.
   </Step>
 </Steps>
 
@@ -34,7 +34,7 @@ https://<host>:<port>/pair/<transport>?code=<6-digit>&fp=<cert-fingerprint>
 
 | Component | Description |
 |-----------|-------------|
-| `host:port` | Aptove CLI address (LAN IP for local, public hostname for Tailscale) |
+| `host:port` | Aptove Router address (LAN IP for local, public hostname for Tailscale) |
 | `/pair/local` | Local transport — self-signed TLS, certificate fingerprint pinned |
 | `/pair/tailscale` | Tailscale transport — standard TLS via Tailscale Serve |
 | `code` | 6-digit one-time code (expires after use) |
@@ -45,12 +45,12 @@ https://<host>:<port>/pair/<transport>?code=<6-digit>&fp=<cert-fingerprint>
 If scanning isn't possible, you can enter the pairing URL manually:
 
 1. In the app, tap **Add Agent** → **Enter manually**.
-2. Copy the pairing URL from Aptove CLI (`/qr` shows it as text below the QR image).
+2. Copy the pairing URL from Aptove Router (`/qr` shows it as text below the QR image).
 3. Paste it and tap **Connect**.
 
 ## Multiple agents
 
-The app supports multiple agents simultaneously. Each Aptove CLI instance creates an independent agent entry identified by its `agent_id`. If you re-pair an Aptove CLI instance that the app has seen before (same `agent_id`), the existing entry is updated rather than duplicated.
+The app supports multiple agents simultaneously. Each Aptove Router instance creates an independent agent entry identified by its `agent_id`. If you re-pair an Aptove Router instance that the app has seen before (same `agent_id`), the existing entry is updated rather than duplicated.
 
 ## Credential storage
 

@@ -1,15 +1,15 @@
 ---
 title: "Sessions"
-description: "How Aptove CLI keeps agent processes alive across disconnections and seamlessly resumes conversations."
+description: "How Aptove Router keeps agent processes alive across disconnections and seamlessly resumes conversations."
 ---
 
-Aptove CLI supports persistent sessions via an agent pool. Agent processes remain alive during temporary disconnections — such as network switches, app backgrounding, or device sleep — enabling seamless session resumption without losing conversation context.
+Aptove Router supports persistent sessions via an agent pool. Agent processes remain alive during temporary disconnections — such as network switches, app backgrounding, or device sleep — enabling seamless session resumption without losing conversation context.
 
 The agent pool is always active. No configuration is required.
 
 ## Overview
 
-When a client disconnects, Aptove CLI keeps the agent process alive in a pool keyed by the client's authentication token. When the same client reconnects, Aptove CLI reattaches to the existing agent process instead of spawning a new one. Idle agents are automatically reaped after 30 minutes.
+When a client disconnects, Aptove Router keeps the agent process alive in a pool keyed by the client's authentication token. When the same client reconnects, Aptove Router reattaches to the existing agent process instead of spawning a new one. Idle agents are automatically reaped after 30 minutes.
 
 ## How It Works
 
@@ -17,24 +17,24 @@ When a client disconnects, Aptove CLI keeps the agent process alive in a pool ke
 
 ```
 1. FIRST CONNECT
-   Client ──WebSocket──► Aptove CLI ──spawn──► Agent Process
+   Client ──WebSocket──► Aptove Router ──spawn──► Agent Process
                                               │
-                         Aptove CLI caches ◄──┘ initialize response
+                         Aptove Router caches ◄──┘ initialize response
 
 2. CLIENT DISCONNECTS
-   Client ──closes──► Aptove CLI marks agent as "idle"
+   Client ──closes──► Aptove Router marks agent as "idle"
                       Agent process stays alive in pool
-                      Aptove CLI buffers agent output
+                      Aptove Router buffers agent output
 
 3. CLIENT RECONNECTS
-   Client ──WebSocket──► Aptove CLI looks up agent by auth token
-                         Aptove CLI intercepts initialize request
-                         Aptove CLI returns cached initialize response
+   Client ──WebSocket──► Aptove Router looks up agent by auth token
+                         Aptove Router intercepts initialize request
+                         Aptove Router returns cached initialize response
                          Client resumes with loadSession / prompt
 
 4. IDLE TIMEOUT
    No reconnect within idle_timeout
-   Aptove CLI terminates the idle agent process
+   Aptove Router terminates the idle agent process
 ```
 
 ### Agent Pool Architecture
@@ -64,19 +64,19 @@ When a client disconnects, Aptove CLI keeps the agent process alive in a pool ke
 
 When a mobile app establishes a new WebSocket connection, the ACP SDK always sends an `initialize` JSON-RPC request as the first message. If this request were forwarded to an already-running agent, the agent would re-initialize and lose all conversation context.
 
-Aptove CLI solves this with **initialize interception**:
+Aptove Router solves this with **initialize interception**:
 
 **First connection (agent is new):**
-1. Client sends `initialize` → Aptove CLI forwards it to the agent
+1. Client sends `initialize` → Aptove Router forwards it to the agent
 2. Agent responds with its capabilities, server info, and agent info
-3. Aptove CLI captures and caches this response in the agent pool
-4. Aptove CLI forwards the response to the client
+3. Aptove Router captures and caches this response in the agent pool
+4. Aptove Router forwards the response to the client
 
 **Subsequent connections (agent is reused):**
-1. Client sends `initialize` → Aptove CLI intercepts it (does NOT forward)
-2. Aptove CLI reads the cached `initialize` response
-3. Aptove CLI swaps the JSON-RPC `id` to match the client's request
-4. Aptove CLI sends the modified cached response directly to the client
+1. Client sends `initialize` → Aptove Router intercepts it (does NOT forward)
+2. Aptove Router reads the cached `initialize` response
+3. Aptove Router swaps the JSON-RPC `id` to match the client's request
+4. Aptove Router sends the modified cached response directly to the client
 5. The agent process is unaware a new connection was made
 
 ```
@@ -91,7 +91,7 @@ This ensures the agent process continues exactly where it left off, with full co
 
 ### Message Buffering
 
-When a client is disconnected, Aptove CLI buffers any output the agent produces (up to `max_buffer_size` messages). When the client reconnects, buffered messages are replayed in order before live streaming resumes. This means no output is lost during brief disconnections.
+When a client is disconnected, Aptove Router buffers any output the agent produces (up to `max_buffer_size` messages). When the client reconnects, buffered messages are replayed in order before live streaming resumes. This means no output is lost during brief disconnections.
 
 ## Configuration
 
@@ -114,7 +114,7 @@ The following describes how the iOS Aptove app works with persistent sessions:
 1. User scans QR code → app extracts host, port, auth token, and TLS fingerprint
 2. App stores the auth token in the iOS Keychain and agent metadata in CoreData
 3. App opens a WebSocket connection with the `X-Bridge-Token` header
-4. ACP SDK sends `initialize` → Aptove CLI forwards to newly spawned agent
+4. ACP SDK sends `initialize` → Aptove Router forwards to newly spawned agent
 5. ACP SDK sends `createSession` → agent creates a new session
 6. User begins chatting via `prompt` requests
 
@@ -123,7 +123,7 @@ The following describes how the iOS Aptove app works with persistent sessions:
 1. App detects the WebSocket connection was lost (network change, backgrounding, etc.)
 2. App reads the stored auth token from the Keychain
 3. App opens a new WebSocket connection with the same `X-Bridge-Token` header
-4. ACP SDK sends `initialize` → **Aptove CLI intercepts and returns cached response**
+4. ACP SDK sends `initialize` → **Aptove Router intercepts and returns cached response**
 5. ACP SDK sends `loadSession` (V1) or `session/resume` (V2) with the previously stored session ID
 6. Agent loads the existing session — full conversation context is restored
 7. User continues chatting seamlessly
@@ -132,10 +132,10 @@ The following describes how the iOS Aptove app works with persistent sessions:
 
 | Component | Preserved? | How |
 |-----------|-----------|-----|
-| Agent process | Yes | Aptove CLI keeps it alive in the pool |
+| Agent process | Yes | Aptove Router keeps it alive in the pool |
 | Conversation history | Yes | Agent process retains in-memory state |
 | Session ID | Yes | Mobile app stores and resubmits it |
-| Agent capabilities | Yes | Aptove CLI caches and replays `initialize` response |
+| Agent capabilities | Yes | Aptove Router caches and replays `initialize` response |
 | Auth token | Yes | Stored in iOS Keychain, sent on reconnect |
 | WebSocket connection | No | New TCP/TLS connection established each time |
 
@@ -151,4 +151,4 @@ Disconnected agents are automatically terminated after the configured idle timeo
 
 ### Process Isolation
 
-Each agent runs as a separate OS process with its own stdin/stdout pipes. There is no shared memory or IPC between agent processes. Aptove CLI communicates with each agent exclusively through stdio.
+Each agent runs as a separate OS process with its own stdin/stdout pipes. There is no shared memory or IPC between agent processes. Aptove Router communicates with each agent exclusively through stdio.

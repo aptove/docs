@@ -5,12 +5,12 @@ description: "A guide to the Aptove app's chat, voice, slash commands, and notif
 
 ## Chat
 
-The chat view is the main interface for talking to an agent. Messages are sent over the WebSocket connection to Aptove CLI, which pipes them to the agent process and streams the response back.
+The chat view is the main interface for talking to an agent. Messages are sent over the WebSocket connection to Aptove Router, which pipes them to the agent process and streams the response back.
 
 - **Streaming responses** — agent output appears word-by-word as it arrives
 - **Markdown rendering** — responses are rendered with syntax highlighting for code blocks
 - **Message history** — conversation history is stored locally on the device
-- **Session continuity** — Aptove CLI preserves the agent session between connections; you can close the app and resume later
+- **Session continuity** — Aptove Router preserves the agent session between connections; you can close the app and resume later
 
 ## Voice input
 
@@ -21,7 +21,7 @@ Tap the microphone button in the chat input to dictate a message. The app uses t
 
 ## Slash commands
 
-Type `/` in the chat input to open the command picker. Commands are provided by the agent (via `available_commands_update`) or defined manually in Aptove CLI's `common.toml`.
+Type `/` in the chat input to open the command picker. Commands are provided by the agent (via `available_commands_update`) or defined manually in Aptove Router's `common.toml`.
 
 | Command type | Behavior |
 |---|---|
@@ -36,7 +36,7 @@ The home screen shows all paired agents with their connection status:
 |--------|---------|
 | Connected | WebSocket open, agent ready |
 | Connecting | Reconnect attempt in progress |
-| Disconnected | Could not reach Aptove CLI |
+| Disconnected | Could not reach Aptove Router |
 
 Tap an agent to open the chat. Long-press for options: **Edit**, **Reconnect**, **Remove**.
 

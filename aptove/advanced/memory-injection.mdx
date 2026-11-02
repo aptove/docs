@@ -1,15 +1,15 @@
 ---
 title: "Memory Injection into session/prompt"
-description: "Aptove CLI prepends MEMORY.md content into session/prompt messages before forwarding to the agent."
+description: "Aptove Router prepends MEMORY.md content into session/prompt messages before forwarding to the agent."
 ---
 
 <Warning>
-  This page documents a place where Aptove CLI modifies an ACP protocol message in flight. It exists for review — the behavior may be kept, refactored, or removed based on that review.
+  This page documents a place where Aptove Router modifies an ACP protocol message in flight. It exists for review — the behavior may be kept, refactored, or removed based on that review.
 </Warning>
 
 ## What it does
 
-Before forwarding a `session/prompt` message from the client to the agent, Aptove CLI reads `MEMORY.md` and prepends its contents as an additional content block at the start of the `prompt` array. The agent receives a different message than the client sent.
+Before forwarding a `session/prompt` message from the client to the agent, Aptove Router reads `MEMORY.md` and prepends its contents as an additional content block at the start of the `prompt` array. The agent receives a different message than the client sent.
 
 **Trigger:** Fires once per connection on the first `session/prompt` after a new session (or after `session/new`). A `memory_injected` flag prevents repeat injection within the same connection.
 
@@ -17,7 +17,7 @@ Before forwarding a `session/prompt` message from the client to the agent, Aptov
 
 ## Why it was added
 
-Persistent memory — gives the agent context from past sessions (notes saved via `/memory`) without requiring the iOS client to manage or store that context. Aptove CLI acts as an invisible context injector.
+Persistent memory — gives the agent context from past sessions (notes saved via `/memory`) without requiring the iOS client to manage or store that context. Aptove Router acts as an invisible context injector.
 
 ## What the agent sees
 
@@ -50,11 +50,11 @@ The client has no visibility into what was prepended.
 
 | Concern | Detail |
 |---------|--------|
-| Silent modification | Aptove CLI changes an ACP message the client authored. The client cannot see or control what was added. |
+| Silent modification | Aptove Router changes an ACP message the client authored. The client cannot see or control what was added. |
 | Context window cost | Every new session starts by consuming tokens for MEMORY.md content — without any indication to the user. |
 | No size feedback | If the agent's context window is near capacity, this injection can push it over without warning (separate from the `memory_max_kb` file-size limit). |
 | Agent-specific behavior | Not all agents handle injected content blocks the same way. |
 
 ## Alternative if removed
 
-The iOS client would need to read and prepend `MEMORY.md` itself (requires exposing the file over an API), or Aptove CLI would expose a dedicated ACP capability that the client could call explicitly to inject memory. This would make the behavior visible and opt-in.
+The iOS client would need to read and prepend `MEMORY.md` itself (requires exposing the file over an API), or Aptove Router would expose a dedicated ACP capability that the client could call explicitly to inject memory. This would make the behavior visible and opt-in.
