@@ -31,7 +31,7 @@
       "pages": ["introduction", "packing/install"]
     },
     {
-      "group": "Aptove",
+      "group": "Aptove Router",
       "pages": [
         "aptove/overview",
         "aptove/configuration",
