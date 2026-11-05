@@ -283,6 +283,7 @@ port    = 8765   # unique per folder
 - Use `/qr` in the TUI to issue a fresh code
 
 ### TLS / certificate errors
+- **`tls handshake eof`** — the mobile app connected but rejected the server's certificate (fingerprint mismatch). Re-scan the QR code with `/qr` to update the stored fingerprint.
 - Mobile apps validate the fingerprint from the QR code `fp` parameter — ensure the app scanned the most recent QR
 - If running in a container, set `advertise_addr` in `common.toml` so the cert includes the correct IP in its SANs; then delete `cert.pem` / `key.pem` and re-pair
 - If you deleted `cert.pem` / `key.pem` and restarted, the fingerprint changed — re-pair all devices
