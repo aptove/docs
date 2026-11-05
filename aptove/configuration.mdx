@@ -79,6 +79,14 @@ client_secret = "your-client-secret"
 
 ```
 
+<Note>
+  **Mobile app unread badges require push to be configured.** When push is disabled
+  (`push_selection = "none"` or the field is absent), agent messages are still buffered and
+  replayed when the user reconnects — but the iOS app cannot increment the unread count badge
+  while backgrounded. Set `push_selection` to `"aptove"` or `"custom"` to enable background
+  badge updates.
+</Note>
+
 ## Field reference
 
 ### Top-level fields

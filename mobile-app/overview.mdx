@@ -24,6 +24,15 @@ The Aptove app is a native mobile client for AI agents. It connects to Aptove Ro
 - **Auto-reconnect** — the app reconnects automatically when your network changes or Aptove Router restarts
 - **Multiple transports** — works with local LAN and Tailscale connections
 - **Secure storage** — connection credentials are stored in the system Keychain
+- **Push notifications** — get notified when your agent responds while the app is in the background
+- **Unread badges** — agents with new messages show a count badge in the agent list; the badge clears when you open that conversation
+
+<Note>
+  Unread badges require push notifications to be configured in Aptove Router. Without a push
+  relay, messages are still buffered and delivered when you return to the app — but the badge
+  won't appear while the app is in the background. See [Push Notifications](/push-server/overview)
+  to set up a push relay.
+</Note>
 
 ## Getting started
 
