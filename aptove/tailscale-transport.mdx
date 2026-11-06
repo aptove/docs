@@ -47,22 +47,25 @@ Transport mode is read from `.aptove/common.toml` — no extra flags needed.
 ## What Happens at Startup
 
 1. Aptove Router detects your MagicDNS hostname (e.g. `my-laptop.tail1234.ts.net`).
-2. `tailscale serve --https=443 http://localhost:<port>` is configured automatically.
-3. The pairing URL uses `wss://my-laptop.tail1234.ts.net` — no certificate fingerprint needed because Tailscale provides a CA-signed certificate.
-4. When Aptove Router exits, `tailscale serve reset` cleans up the serve configuration automatically.
+2. A unique path prefix is derived from the instance's `agentId` (first 8 characters).
+3. `tailscale serve --https=443 /<prefix> http://localhost:<port>` registers a path-based route.
+4. The pairing URL uses `wss://my-laptop.tail1234.ts.net/<prefix>` — no certificate fingerprint needed because Tailscale provides a CA-signed certificate.
+5. When Aptove Router exits, only its own path route is removed — other instances are unaffected.
 
 ---
 
 ## Pairing URL Format
 
 ```
-wss://my-laptop.tail1234.ts.net
+wss://my-laptop.tail1234.ts.net/550e8400
 ```
+
+The path segment (`550e8400`) is derived from the instance's `agentId` and uniquely identifies this Aptove Router instance on the shared Tailscale hostname.
 
 The QR encodes a pairing endpoint. After scanning, the mobile app calls:
 
 ```
-GET https://my-laptop.tail1234.ts.net/pair/tailscale?code=847291
+GET https://my-laptop.tail1234.ts.net/550e8400/pair/tailscale?code=847291
 ```
 
 and receives credentials:
@@ -70,7 +73,7 @@ and receives credentials:
 ```json
 {
   "agentId":        "550e8400-e29b-41d4-a716-446655440000",
-  "url":            "wss://my-laptop.tail1234.ts.net",
+  "url":            "wss://my-laptop.tail1234.ts.net/550e8400",
   "protocol":       "acp",
   "version":        "1.0",
   "authToken":      "base64urltoken"
@@ -86,6 +89,30 @@ and receives credentials:
 
 ---
 
+## Multiple Instances
+
+You can run multiple Aptove Router instances from different folders on the same machine, each using Tailscale transport. They all share the single Tailscale hostname but are isolated by unique path prefixes.
+
+```
+my-laptop.tail1234.ts.net
+├── /550e8400  →  localhost:8766  (~/project-a)
+├── /7c3f9b12  →  localhost:8767  (~/project-b)
+└── /a1d4e890  →  localhost:8768  (~/project-c)
+```
+
+Each instance:
+
+1. Derives a unique path prefix from the first 8 characters of its `agentId` (auto-generated UUID stored in `.aptove/common.toml`).
+2. Registers its own route via `tailscale serve --https=443 /<prefix> http://localhost:<port>`.
+3. Auto-resolves port conflicts — if `8766` is taken, it scans upward and picks the next free port.
+4. Cleans up only its own route on exit — other instances are unaffected.
+
+No manual configuration is needed. Each folder gets its own `.aptove/common.toml` with a unique `agentId`, so the path prefix is stable across restarts.
+
+The mobile app pairs with each instance independently via its QR code and shows them as separate agents.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
@@ -95,3 +122,5 @@ and receives credentials:
 | `tailscale-serve mode requires MagicDNS + HTTPS` | MagicDNS or HTTPS not enabled on tailnet | Enable in [Tailscale admin console](https://login.tailscale.com/admin/dns) → DNS |
 | `tailscale serve requires Tailscale v1.38+` | Outdated Tailscale | Update Tailscale |
 | App cannot reach Aptove Router after pairing | Mobile not on the same tailnet | Open Tailscale app on the phone, ensure it's signed in and connected |
+| App stops connecting after Aptove Router upgrade | URL format changed (path prefix added) | Re-scan the QR code with `/qr` — the app updates the stored URL automatically |
+| 401 Unauthorized with two instances | Old root-path route still registered | Run `tailscale serve --https=443 / off` to clear the stale root route, then restart both instances |
