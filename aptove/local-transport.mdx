@@ -252,6 +252,17 @@ curl -k "https://192.168.1.100:8765/pair/local?code=847291"
 
 ---
 
+## Automatic Recovery
+
+If the local transport fails at startup — for example, the port is blocked by a firewall or a bind error occurs — Aptove retries every 10 seconds automatically.
+
+- Once the issue clears, the bridge starts and paired devices reconnect. No QR re-scan is needed as long as the port hasn't changed.
+- If the port changed during recovery (conflict resolution), the QR popup opens automatically so you can re-scan.
+- The TUI shows "Transport unavailable — retrying every 10s..." in the log panel and a "retrying automatically" notice in the error popup.
+- Use `/transport` to switch transports or `/quit` to exit while retrying.
+
+---
+
 ## Troubleshooting
 
 ### Phone can't connect after restart

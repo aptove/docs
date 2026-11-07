@@ -113,10 +113,21 @@ The mobile app pairs with each instance independently via its QR code and shows 
 
 ---
 
+## Automatic Recovery
+
+If Tailscale is not running when Aptove starts — daemon stopped, MagicDNS not enabled, or HTTPS certificates not configured — Aptove retries every 10 seconds automatically.
+
+- Once Tailscale becomes available, the bridge starts automatically. No QR re-scan is needed — the Tailscale URL (hostname + path prefix) is stable across restarts, so paired devices reconnect on their own.
+- The TUI shows "Transport unavailable — retrying every 10s..." in the log panel and a "retrying automatically" notice in the error popup.
+- Use `/transport` to switch transports or `/quit` to exit while retrying.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
+| `Transport unavailable — retrying every 10s...` | Tailscale daemon not running or MagicDNS/HTTPS not enabled | Start `tailscale up`, enable MagicDNS + HTTPS in admin console; Aptove retries automatically |
 | `tailscale: not found on PATH` | Tailscale not installed | Install from [tailscale.com/download](https://tailscale.com/download) |
 | `Not enrolled in a Tailscale network` | Machine not connected | Run `tailscale up` |
 | `tailscale-serve mode requires MagicDNS + HTTPS` | MagicDNS or HTTPS not enabled on tailnet | Enable in [Tailscale admin console](https://login.tailscale.com/admin/dns) → DNS |

@@ -191,6 +191,16 @@ aptove
 
 ---
 
+## Automatic Recovery
+
+If `cloudflared` fails to start or the tunnel doesn't become ready within 30 seconds — due to a network issue, DNS failure, or `cloudflared` not being installed — Aptove retries every 10 seconds automatically.
+
+- Once `cloudflared` can establish the tunnel, the bridge starts automatically. No QR re-scan is needed — the Cloudflare hostname is stable across restarts.
+- Common transient failures that auto-recover: network connectivity restored, `cloudflared` installed after initial failure, DNS propagation completing.
+- Permanent failures (bad API token, deleted tunnel) will keep retrying harmlessly. Use `/transport` to reconfigure or `/quit` to exit.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Likely Cause | Fix |
