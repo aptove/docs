@@ -32,10 +32,13 @@ Immediately after the WebSocket connection is authenticated, before any ACP mess
   "method": "bridge/identify",
   "params": {
     "bridgeAgentId": "3f2a1b4c-...",
-    "cwd": "/Users/alice/code/my-project"
+    "cwd": "/Users/alice/code/my-project",
+    "agentName": "my-project"
   }
 }
 ```
+
+The `agentName` field contains the user-visible name for this agent instance (see [Agent Name](/aptove/advanced/agent-name) for details on how it is derived and updated).
 
 The mobile client checks `bridgeAgentId` against the value it stored when it first paired with this Aptove Router instance. If they match, the connection proceeds normally. If they differ, the client disconnects immediately and shows an actionable warning:
 
@@ -68,6 +71,7 @@ The mobile client can send `bridge/*` messages to control Aptove Router features
 | `bridge/registerPushToken` | Register a device for push notifications | `platform`, `deviceToken`, `bundleId` |
 | `bridge/unregisterPushToken` | Remove a device's push registration | `deviceToken` |
 | `bridge/appendMemory` | Append a note to `MEMORY.md` | `text` |
+| `bridge/setAgentName` | Update the agent's display name in `common.toml` | `name` |
 
 ---
 

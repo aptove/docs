@@ -62,6 +62,7 @@
                 "group": "Advanced",
                 "pages": [
                   "aptove/advanced/agent-id",
+                  "aptove/advanced/agent-name",
                   "aptove/advanced/memory-injection",
                   "aptove/advanced/session-resumption",
                   "aptove/advanced/session-load-error",
