@@ -25,6 +25,10 @@ copilot --acp
 
 Yolo mode skips confirmation prompts, letting Copilot execute tool calls automatically without asking each time.
 
+<Warning>
+`--yolo` removes all human confirmation steps. The agent can read and write files, run shell commands, and make API calls without prompting. Only use this mode on a machine where you are comfortable with autonomous execution — ideally inside a sandboxed environment such as a Docker container or a dedicated virtual machine, not on your primary workstation.
+</Warning>
+
 ```
 copilot --acp --yolo
 ```
@@ -77,7 +81,11 @@ claude-agent-acp
 
 #### Yolo mode
 
-Yolo mode skips all permission prompts, letting Claude run shell commands and edit files without asking for confirmation. Use with caution.
+Yolo mode skips all permission prompts, letting Claude run shell commands and edit files without asking for confirmation.
+
+<Warning>
+`--dangerously-skip-permissions` removes all human confirmation steps. Claude can execute arbitrary shell commands, modify files, and perform tool calls without prompting. Only use this mode on a machine you control and are comfortable with autonomous execution — ideally inside a sandboxed environment such as a Docker container or a dedicated virtual machine, not on your primary workstation with broad filesystem access.
+</Warning>
 
 ```
 npx @agentclientprotocol/claude-agent-acp --dangerously-skip-permissions
@@ -90,6 +98,21 @@ Any process that implements the ACP stdio protocol can be used. Enter the full s
 ```
 my-agent --acp --model gpt-4
 ```
+
+---
+
+## Process lifecycle
+
+Aptove Router starts the agent command as a managed subprocess and terminates it when the session ends or Aptove Router exits. If Aptove Router crashes or is killed hard (`kill -9`), the agent subprocess may be left running. To clean up orphaned processes:
+
+```bash
+# Find and kill a stale claude-agent-acp process
+pkill -f "claude-agent-acp"
+# Or for Copilot
+pkill -f "copilot --acp"
+```
+
+Running agents in a container avoids this entirely — the container's process group is cleaned up automatically when the container stops.
 
 ---
 

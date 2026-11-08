@@ -46,6 +46,14 @@ Aptove Router            cf-token              cf-push-relay          Apple / Go
 2. It calls `POST /register` on **cf-push-relay** with the device token received from the mobile app, using the JWT as a Bearer token.
 3. When the agent produces output, Aptove Router calls `POST /push` on **cf-push-relay**. The relay fans out to all registered devices for that instance's JWT subject (`sub` claim).
 
+## Availability and fallback
+
+Push notifications are **optional and best-effort**. If the push relay is unreachable — because the relay is down, the host machine's outbound network blocks the Cloudflare Workers endpoint, or the JWT has expired and cannot be refreshed — Aptove Router logs the failure and continues operating normally. No agent functionality is affected; you simply will not receive a background notification on your phone.
+
+<Note>
+If you stop receiving push notifications, check that Aptove Router can reach the relay URL and that your `client_id` / `client_secret` credentials in `common.toml` are still valid. You can re-pair the push relay without re-scanning the agent QR code.
+</Note>
+
 ## Security model
 
 - **Isolation by `sub` claim** — each Aptove Router instance's JWT has a unique `sub` (its `client_id`). Device registrations and pushes are namespaced by `sub`, so one instance can never trigger notifications for another instance's devices.

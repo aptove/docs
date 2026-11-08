@@ -121,6 +121,10 @@ If Tailscale is not running when Aptove starts — daemon stopped, MagicDNS not 
 - The TUI shows "Transport unavailable — retrying every 10s..." in the log panel and a "retrying automatically" notice in the error popup.
 - Use `/transport` to switch transports or `/quit` to exit while retrying.
 
+<Note>
+Tailscale is a second dependency beyond Aptove Router itself. If the Tailscale daemon stops, its node key expires, or ACLs change, your mobile client will lose remote access until Tailscale is restored. If you are on the same local network as your machine you can always fall back to the [Local transport](/aptove/local-transport), which requires no Tailscale and works over LAN without any additional setup.
+</Note>
+
 ---
 
 ## Troubleshooting
