@@ -54,6 +54,7 @@
               "aptove/sessions",
               "aptove/slash-commands",
               "aptove/memory",
+              "aptove/computer-files",
               "aptove/logs",
               "aptove/tui",
               "aptove/keep-alive",

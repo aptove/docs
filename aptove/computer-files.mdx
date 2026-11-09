@@ -1,0 +1,176 @@
+---
+title: "Computer File Browser"
+description: "Browse and attach files from your computer directly in the Aptove iOS app."
+---
+
+## Overview
+
+The Computer File Browser lets you navigate the directory where `aptove` is running directly from the iOS chat interface. You can view source code with syntax highlighting, preview images, and attach them to messages — all without leaving the app.
+
+<Note>
+**Sandboxed to the working directory.** The browser can only access the directory where you launched `aptove` and all subdirectories within it. No other part of the host machine is accessible.
+
+File access travels over the same authenticated WebSocket used for chat. There are no new HTTP endpoints or exposed ports.
+</Note>
+
+## How to use
+
+1. Open a chat with any connected agent in the Aptove app.
+2. Tap the **+** button on the left side of the message input bar.
+3. Tap **Computer** (the desktop computer icon) in the attachment panel.
+4. Browse the folder tree. Tap a folder to navigate into it; tap the back arrow to go up.
+5. **To attach an image:** tap it to select (a checkmark appears). Tap again to deselect.
+6. **To view a file:** tap any file to open the full-screen viewer. Source code is displayed with syntax highlighting.
+7. Tap **Add N** in the top-right corner to attach the selected images to your message.
+8. Send the message — images are included as content blocks, just like photos from the Photos picker.
+
+<Tip>
+To attach a specific image shown in the file viewer, tap **Attach** in the viewer's toolbar.
+</Tip>
+
+## Supported file types
+
+### Images — view and attach
+
+Tap to select. Selected images are included in your message just like photos from the Photos picker. Thumbnails are loaded lazily as you scroll.
+
+Supported formats: `jpg`, `jpeg`, `png`, `gif`, `webp`, `heic`, `heif`, `bmp`, `tiff`, `svg`
+
+### Source code and text — view with syntax highlighting
+
+Tap to open the file viewer. The viewer renders source code with syntax highlighting via [highlight.js](https://highlightjs.org), with a dark theme.
+
+| Language | Extensions |
+|----------|------------|
+| Rust | `.rs` |
+| Swift | `.swift` |
+| Python | `.py` |
+| JavaScript / TypeScript | `.js` `.mjs` `.ts` `.mts` |
+| HTML | `.html` `.htm` |
+| CSS | `.css` |
+| JSON | `.json` |
+| Markdown | `.md` `.markdown` |
+| Shell | `.sh` `.bash` `.zsh` `.fish` |
+| Go | `.go` |
+| Java / Kotlin | `.java` `.kt` |
+| C / C++ | `.c` `.cpp` `.h` |
+| C# | `.cs` |
+| Ruby | `.rb` |
+| XML / TOML / YAML | `.xml` `.toml` `.yaml` `.yml` |
+| Plain text | `.txt` |
+
+---
+
+## Security model
+
+### Working directory sandbox
+
+The file browser is scoped to the directory where you launched `aptove`. For example, if you run:
+
+```bash
+cd ~/projects/my-agent
+aptove
+```
+
+then the file browser can only access `~/projects/my-agent/` and its subdirectories. It cannot navigate to `~`, `/etc`, or any other path outside.
+
+### Path traversal protection
+
+All path requests from iOS are validated server-side before any file I/O:
+
+1. Any path containing `..` is immediately rejected.
+2. The resolved path is canonicalized (all symlinks and `..`/`.` components resolved to their true absolute path).
+3. The canonical path must start with the working directory. If it escapes the sandbox — even via a symlink — the request is rejected with a `forbidden` error.
+
+### Transport security
+
+File requests travel over the existing authenticated WebSocket — the same channel used for chat. No new TCP ports are exposed. Security properties by transport:
+
+| Transport | Encryption | Auth |
+|-----------|------------|------|
+| `local` | Unencrypted on LAN | Token validated on WebSocket upgrade; file requests inherit the session |
+| `tailscale` | WireGuard at the network layer | Token + WireGuard identity |
+| `cloudflare` | TLS through Cloudflare Tunnel | Token + TLS |
+
+<Note>
+Unlike a plain HTTP file endpoint, using the WebSocket channel means the Cloudflare transport does **not** expose a new internet-accessible URL for file browsing.
+</Note>
+
+### Hidden files
+
+Files and directories whose names begin with `.` (dotfiles) are excluded from directory listings. This prevents accidental exposure of `.env`, `.git`, `.ssh`, and similar sensitive paths.
+
+---
+
+## Limitations
+
+- Only files within the Aptove Router working directory are accessible.
+- Dotfiles and hidden directories are not shown.
+- Syntax highlighting requires an internet connection (uses the highlight.js CDN). Files still render in readable plain monospace text without it.
+- Only images can be **attached** to messages. Text/code files can be viewed in the app but not attached (paste the content into your message if needed).
+
+---
+
+## Bridge protocol reference
+
+The file browser uses two `bridge/*` WebSocket messages handled by Aptove Router and never forwarded to the agent.
+
+### `bridge/files/list`
+
+```json
+// Request (iOS → Router)
+{ "method": "bridge/files/list", "params": { "path": "src" } }
+
+// Response (Router → iOS)
+{
+  "method": "bridge/files/listResponse",
+  "params": {
+    "path": "src",
+    "entries": [
+      { "name": "lib.rs",   "kind": "file", "size": 4096,   "isImage": false },
+      { "name": "assets",   "kind": "dir",  "size": 0,      "isImage": false },
+      { "name": "logo.png", "kind": "file", "size": 102400, "isImage": true  }
+    ]
+  }
+}
+```
+
+Pass `"path": ""` to list the root working directory. Entries are sorted: directories first, then files, both alphabetically.
+
+### `bridge/files/content`
+
+```json
+// Request (iOS → Router)
+{ "method": "bridge/files/content", "params": { "path": "src/lib.rs" } }
+
+// Text file response
+{
+  "method": "bridge/files/contentResponse",
+  "params": {
+    "path": "src/lib.rs",
+    "mimeType": "text/x-rust",
+    "encoding": "text",
+    "data": "fn main() { ... }"
+  }
+}
+
+// Binary / image response
+{
+  "method": "bridge/files/contentResponse",
+  "params": {
+    "path": "logo.png",
+    "mimeType": "image/png",
+    "encoding": "base64",
+    "data": "<base64>"
+  }
+}
+
+// Error response
+{
+  "method": "bridge/files/contentResponse",
+  "params": { "path": "...", "error": "forbidden" }
+}
+// error values: "forbidden", "not_found", "is_directory"
+```
+
+Text files (MIME type beginning with `text/` or `application/json`/`application/xml`) are returned as UTF-8 strings with `"encoding": "text"`. All other files use `"encoding": "base64"`.
