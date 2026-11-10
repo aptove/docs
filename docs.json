@@ -54,6 +54,7 @@
               "aptove/sessions",
               "aptove/slash-commands",
               "aptove/memory",
+              "aptove/scheduled-tasks",
               "aptove/computer-files",
               "aptove/logs",
               "aptove/tui",
@@ -68,7 +69,8 @@
                   "aptove/advanced/session-resumption",
                   "aptove/advanced/session-load-error",
                   "aptove/advanced/commands-injection",
-                  "aptove/advanced/memory-consolidation"
+                  "aptove/advanced/memory-consolidation",
+                  "aptove/advanced/scheduled-task-execution"
                 ]
               }
             ]
@@ -79,7 +81,8 @@
               "mobile-app/overview",
               "mobile-app/pairing",
               "mobile-app/features",
-              "mobile-app/voice-input"
+              "mobile-app/voice-input",
+              "mobile-app/tasks"
             ]
           },
           {

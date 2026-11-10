@@ -1,0 +1,45 @@
+---
+title: "Scheduled Task Execution"
+description: "Aptove Router autonomously creates sessions and sends prompts for scheduled tasks."
+---
+
+<Warning>
+  This page documents a place where Aptove Router autonomously initiates ACP protocol messages without a client request. It exists for review — the behavior may be kept, refactored, or removed based on that review.
+</Warning>
+
+## What it does
+
+The task scheduler runs as a background tokio task that wakes every 60 seconds. When a task's `nextRunAt` time has passed, the scheduler:
+
+1. Gets or spawns the agent via the pool (`get_or_spawn`)
+2. Sends a `session/new` request to create a new conversation
+3. Waits for the session ID from the cached session response
+4. Reads `MEMORY.md` and prepends it to the prompt (same as memory injection)
+5. Sends a `session/prompt` with the task text prefixed by `[Scheduled Task: {name}]`
+6. Updates the task file: advances `nextRunAt` for recurring tasks, deletes one-time tasks
+
+**Code location:** `core/src/task_scheduler.rs` — `start_scheduler()` function.
+
+## Response routing
+
+Agent responses flow through the normal `agent_to_ws` broadcast channel:
+
+- **Client connected:** Response appears in the chat in real-time
+- **Client disconnected:** Response is buffered in the agent pool's overflow buffer and replayed on reconnect. Push notification is sent if configured.
+
+## Compact Memory suppression
+
+The default "Compact Memory" task's response contains `<merged_memory>` tags. This response is suppressed from reaching clients — the merged content is extracted and written directly to `MEMORY.md`. This uses the same suppression mechanism as the inline memory consolidation (`suppress_response_id` on `PooledAgent`).
+
+**Trigger:** Request ID prefix `__task_memory_compact_`.
+
+## ACP methods touched
+
+| Method | How |
+|--------|-----|
+| `session/new` | Synthesized by scheduler to create a new session |
+| `session/prompt` | Synthesized by scheduler with task prompt + memory |
+
+## Why it was added
+
+Users need the ability to schedule recurring AI tasks (daily reports, memory compaction, data checks) that run automatically even when the mobile app is not open. The bridge is the natural place for this since it manages the agent lifecycle and has persistent storage.

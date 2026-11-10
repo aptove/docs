@@ -1,0 +1,112 @@
+---
+title: "Scheduled Tasks"
+description: "Run AI prompts on a schedule — one-time or recurring (daily, weekly, monthly)."
+---
+
+## What are Scheduled Tasks?
+
+Scheduled tasks let you define text-based prompts that Aptove Router automatically sends to the AI agent at specific times. Each task creates a new session, sends the prompt, and the agent responds as if it were a regular conversation. Responses are buffered and push-notified if the mobile app is not connected.
+
+Tasks are stored as individual JSON files in `.aptove/tasks/`. The built-in scheduler checks for due tasks every 60 seconds.
+
+## Task types
+
+| Type | Behavior |
+|------|----------|
+| **One-time** | Runs once at the specified date/time, then the task file is automatically deleted |
+| **Daily** | Runs every day at the specified time |
+| **Weekly** | Runs on a specific day of the week at the specified time |
+| **Monthly** | Runs on a specific day of the month at the specified time |
+
+All times are timezone-aware using IANA timezone identifiers (e.g., `America/New_York`, `Europe/Istanbul`).
+
+## Enabled / disabled behaviour
+
+Each task has an `enabled` field that controls whether the scheduler executes it.
+
+| Task type | `enabled` | Behaviour |
+|-----------|-----------|-----------|
+| **One-time** | Always `true` | Cannot be set to `false`. The task is either pending or deleted after execution. Setting `enabled: false` via `bridge/updateTask` on a one-time task is ignored — the mobile app enforces this by locking the toggle. |
+| **Recurring** | `true` or `false` | `false` pauses execution without deleting the file. The task retains its schedule and `nextRunAt` value and resumes when re-enabled. |
+
+When a task is updated from a recurring schedule to a one-time (`once`) schedule, `enabled` is automatically set to `true` by the mobile client to enforce the constraint.
+
+## Default task: Compact Memory
+
+On first startup, Aptove Router creates a default "Compact Memory" task that runs daily at 04:00 (local time). This task asks the AI to consolidate and deduplicate the contents of `MEMORY.md`, keeping it clean and well-organized. The response is automatically written back to `MEMORY.md` — it never appears in the chat.
+
+The default task is deletable. If deleted, it will be recreated on the next bridge restart.
+
+## Storage format
+
+Each task is a JSON file at `.aptove/tasks/{uuid}.json`:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Daily standup summary",
+  "prompt": "Summarize the key items from today's standup notes.",
+  "schedule": {
+    "type": "recurring",
+    "frequency": "daily",
+    "time": "09:00",
+    "timezone": "America/New_York"
+  },
+  "enabled": true,
+  "createdAt": "2026-01-15T10:30:00Z",
+  "lastRunAt": "2026-01-16T14:00:00Z",
+  "nextRunAt": "2026-01-17T14:00:00Z"
+}
+```
+
+## Edge cases
+
+### Bridge restart with missed tasks
+
+When Aptove Router restarts after being down, any **enabled** task whose `nextRunAt` is in the past will execute on the first scheduler tick (within 60 seconds of startup). For recurring tasks, only one catch-up execution happens — `nextRunAt` is then advanced to the next future occurrence. One-time past tasks execute once and are deleted. Disabled recurring tasks are skipped entirely during catch-up.
+
+### Per-agent scope
+
+Tasks are per-agent — stored in the agent's `.aptove/tasks/` directory. Each agent instance has its own independent set of tasks.
+
+### Memory injection
+
+When a scheduled task fires, the agent's `MEMORY.md` is injected into the prompt (same as regular user prompts). This gives the agent full context for executing the task.
+
+## Bridge protocol
+
+Tasks are managed via `bridge/*` JSON-RPC methods:
+
+| Direction | Method | Params | Response |
+|-----------|--------|--------|----------|
+| client -> bridge | `bridge/createTask` | `{name, prompt, schedule}` | `{task}` |
+| client -> bridge | `bridge/listTasks` | `{}` | `{tasks: [...]}` |
+| client -> bridge | `bridge/updateTask` | `{id, name?, prompt?, schedule?, enabled?}` | `{task}` |
+| client -> bridge | `bridge/deleteTask` | `{id}` | `{deleted: true}` |
+| bridge -> client | `bridge/taskExecuted` | `{taskId, taskName, sessionId}` | (notification) |
+
+## Managing tasks from the command line
+
+You can also create tasks by writing JSON files directly to `.aptove/tasks/`:
+
+```bash
+cat > .aptove/tasks/my-task.json << 'EOF'
+{
+  "id": "my-custom-task",
+  "name": "Weekly report",
+  "prompt": "Generate a weekly project status report.",
+  "schedule": {
+    "type": "recurring",
+    "frequency": "weekly",
+    "time": "17:00",
+    "dayOfWeek": 5,
+    "timezone": "UTC"
+  },
+  "enabled": true,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "nextRunAt": "2026-01-03T17:00:00Z"
+}
+EOF
+```
+
+The scheduler will pick up the file within 60 seconds.

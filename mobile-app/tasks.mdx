@@ -1,0 +1,78 @@
+---
+title: "Scheduled Tasks"
+description: "Create and manage scheduled AI tasks from the mobile app."
+---
+
+## Overview
+
+The Tasks feature lets you schedule text-based prompts to run on your AI agent automatically. Tasks can be one-time or recurring (daily, weekly, monthly). When a task fires, the AI responds as if you sent the message yourself — you'll see the conversation in your chat history and receive push notifications if the app isn't open.
+
+## Accessing Tasks
+
+### Tasks tab
+
+The bottom navigation bar includes a **Tasks** tab (clock icon). This shows all tasks across every connected agent in a single list.
+
+- **Pull to refresh:** Swipe down to reload the task list
+- **Search:** Use the search bar to filter by task name, prompt text, or agent name
+- **Open / edit:** Tap a task to open the Task editor and change any field
+- **Delete:** Swipe left on a task to delete it, or use the **Delete** button inside the Task editor
+- **Toggle (recurring tasks only):** Use the switch on the task row to enable or disable a recurring task without deleting it
+
+### From chat
+
+In any chat, tap the **+** button to open the attachment panel, then tap **Schedule Task** (clock icon) to create a task for that agent.
+
+## Creating a task
+
+1. Enter a **name** — a short label for the task. Tap the mic icon to dictate the name with AI correction.
+2. Enter a **prompt** — the text that will be sent to the AI when the task fires. Tap the mic button below the field to dictate with AI correction.
+3. Choose a **schedule type:**
+   - **Once** — pick a specific date and time
+   - **Daily** — pick a time of day
+   - **Weekly** — pick a day of the week and time
+   - **Monthly** — pick a day of the month (1-28) and time
+4. Tap **Save**
+
+The timezone is automatically detected from your device.
+
+## Editing a task
+
+Tap any task row to open the Task editor. All fields are editable, including the schedule. Tap **Save** to apply changes.
+
+To delete a task from the editor, tap **Delete** (shown instead of Cancel for existing tasks). A confirmation dialog is shown before the task is permanently removed.
+
+## Task details
+
+Each task row shows:
+
+- **Agent avatar** — which agent the task belongs to
+- **Agent name** and **task name**
+- **Type badge** — "One-time" (orange) or "Repeating" (blue)
+- **Schedule summary** (e.g., "Daily at 09:00")
+- **Next run** — relative time until the next execution
+- **Last run** — when the task last executed (if applicable)
+- **Enabled toggle** — see below
+
+## Enabling and disabling tasks
+
+The behaviour of the enabled toggle depends on the task type:
+
+| Task type | Toggle | Can be disabled? |
+|-----------|--------|-----------------|
+| **One-time** | Always ON (grayed out) | No — a one-time task is either waiting to run or it's deleted after running |
+| **Recurring** | Interactive | Yes — disabling pauses execution without deleting the task |
+
+Disabling a recurring task keeps it stored on the bridge. It will not execute while disabled, but it retains its schedule and can be re-enabled at any time.
+
+If you change a recurring task to **Once** in the editor and save, it is automatically re-enabled regardless of its previous state.
+
+## Default task: Compact Memory
+
+Every agent comes with a default "Compact Memory" task that runs daily at 4:00 AM. This task automatically cleans up and consolidates your agent's memory file, removing duplicates and outdated entries. You can delete this task if you don't want automatic memory compaction — it will be recreated if you restart the bridge.
+
+## How it works
+
+Tasks are stored on the bridge (not on your phone). When you create a task, it's sent to the bridge and saved as a JSON file. The bridge's scheduler checks every 60 seconds for due tasks and runs them autonomously — even if your phone is off or disconnected. Responses are buffered and delivered when you reconnect.
+
+One-time tasks are automatically deleted after they execute. Recurring tasks continue running on schedule.
