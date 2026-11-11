@@ -91,6 +91,7 @@ ERROR 🔐 Agent returned authentication error — check API key / agent auth co
 
 Your session has expired. Re-run `claude` → `/login` to refresh it, then use `/agent` in Aptove to reload the agent without restarting.
 
+
 #### Yolo mode
 
 Yolo mode skips all permission prompts, letting Claude run shell commands and edit files without asking for confirmation.
@@ -128,6 +129,19 @@ Running agents in a container avoids this entirely — the container's process g
 
 ---
 
+## Mobile app authentication warnings
+
+When the mobile app connects to an agent that advertises authentication status support, it automatically checks whether the agent's session is still valid. If the session has expired or the agent requires re-authentication, the app surfaces this in two places:
+
+- **Agent list** — an orange warning badge replaces the green status dot next to the agent name.
+- **Chat** — an orange banner appears at the top of the conversation: *"Authentication Required — This agent requires authentication. Please sign in on your computer."*
+
+To resolve the warning, re-authenticate on the computer running Aptove Router (the exact steps depend on the agent — for Claude, run `claude` → `/login`), then reconnect from the mobile app. The warning clears automatically once the app establishes a new connection and confirms the session is valid.
+
+Agents that do not implement the `auth/status` ACP capability are unaffected — no badge or banner is shown for them.
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
@@ -136,3 +150,4 @@ Running agents in a container avoids this entirely — the container's process g
 | Agent starts but Aptove Router shows no clients | Agent is not in ACP mode — add the required flag (e.g. `--acp`) |
 | Agent exits immediately | Run the command manually in a terminal to see the error output |
 | `ERROR 🔐 Agent returned authentication error` (Claude) | Claude Code session expired — run `claude` → `/login`, then use `/agent` in Aptove to reload |
+| Orange warning badge / banner in the mobile app | Agent session expired — re-authenticate on the computer and reconnect from the mobile app |
