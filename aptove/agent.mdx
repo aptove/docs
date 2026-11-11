@@ -64,20 +64,32 @@ npm install -g @agentclientprotocol/codex-acp
 codex-acp
 ```
 
-### Claude (via claude-agent-acp)
+### Claude (via claude-code-acp) {#claude-via-claude-agent-acp}
 
-Requires Node.js. Runs the ACP wrapper for Claude.
-
-```
-npx @agentclientprotocol/claude-agent-acp
-```
-
-Or install globally first:
+Requires Node.js and a [Claude Code](https://claude.ai/download) installation. Install the package globally, then use the `claude-code-acp` command:
 
 ```bash
 npm install -g @agentclientprotocol/claude-agent-acp
-claude-agent-acp
 ```
+
+```
+claude-code-acp
+```
+
+#### Authentication
+
+`claude-code-acp` uses your Claude Code session — no separate API key is needed. Before using it with Aptove, make sure you are logged in:
+
+1. Open a terminal and run `claude`
+2. Type `/login` and complete the browser-based login flow
+
+If you see this error in the Aptove log panel:
+
+```
+ERROR 🔐 Agent returned authentication error — check API key / agent auth config
+```
+
+Your session has expired. Re-run `claude` → `/login` to refresh it, then use `/agent` in Aptove to reload the agent without restarting.
 
 #### Yolo mode
 
@@ -88,7 +100,7 @@ Yolo mode skips all permission prompts, letting Claude run shell commands and ed
 </Warning>
 
 ```
-npx @agentclientprotocol/claude-agent-acp --dangerously-skip-permissions
+claude-code-acp --dangerously-skip-permissions
 ```
 
 ### Custom / other agents
@@ -123,3 +135,4 @@ Running agents in a container avoids this entirely — the container's process g
 | `Failed to start 'copilot --acp'` | Agent is not installed or not on `$PATH` |
 | Agent starts but Aptove Router shows no clients | Agent is not in ACP mode — add the required flag (e.g. `--acp`) |
 | Agent exits immediately | Run the command manually in a terminal to see the error output |
+| `ERROR 🔐 Agent returned authentication error` (Claude) | Claude Code session expired — run `claude` → `/login`, then use `/agent` in Aptove to reload |
