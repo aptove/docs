@@ -124,7 +124,51 @@ Revoke a client. Any JWTs already issued for this client will still be valid unt
 | `TOKEN_ISSUER` | `wrangler.toml` `[vars]` | `iss` claim in issued JWTs (e.g. `"https://token.aptove.com"`) |
 | `TOKEN_AUDIENCE` | `wrangler.toml` `[vars]` | `aud` claim in issued JWTs (e.g. `"https://push.aptove.com"`) |
 | `ADMIN_CLIENT_ID` | `wrangler.toml` `[vars]` | Built-in admin client ID — change from `"admin"` before deploying |
+| `TOKEN_BUCKET_CAPACITY` | `wrangler.toml` `[vars]` | Max burst size for `/token` rate limit (default: `"5"`) |
+| `TOKEN_REFILL_INTERVAL_MS` | `wrangler.toml` `[vars]` | Ms between token bucket refills (default: `"3600000"` = 1hr) |
 | `CLIENT_REGISTRY` | `wrangler.toml` `[[kv_namespaces]]` | KV namespace binding for storing client records |
+
+## Rate limiting
+
+Every endpoint has rate limiting to prevent abuse and brute-force credential testing.
+
+| Tier | Mechanism | Purpose | Cost |
+|------|-----------|---------|------|
+| **Tier 1 — Abuse ceiling** | Cloudflare native `[[ratelimits]]` binding | Hard cutoff for burst abuse/DoS | Zero (no KV) |
+| **Tier 2 — Token bucket** | KV-backed token bucket | Sustained rate control with configurable burst | 1 KV read + 1 KV write per request |
+
+### Per-endpoint limits
+
+| Endpoint | Tier 1 (Cloudflare native) | Tier 2 bucket capacity | Tier 2 refill rate | Sustained max |
+|----------|----------------------------|------------------------|--------------------|--------------:|
+| `POST /token` | 1 req/min per `client_id` | 5 | 1 token per 1 hr | 1/hr |
+| `GET /health` | 1 req/min per IP | — | — | 1/min |
+| `GET /.well-known/jwks.json` | 1 req/min per IP | — | — | 1/min |
+
+### Brute-force protection
+
+Rate limiting on `POST /token` fires **before** the PBKDF2-SHA256 credential verification. This is critical: without it, an attacker could test secrets at high speed against the computationally expensive PBKDF2 check. With rate limiting, they are limited to 1 attempt per minute (Tier 1) and 1 sustained attempt per hour (Tier 2).
+
+### Token bucket algorithm
+
+Same implementation as cf-push-relay. Each client gets a bucket with a fixed capacity. Every request consumes one token. Tokens refill at a constant interval up to the capacity.
+
+```
+KV key:  rl:token:{client_id}
+TTL:     24 hours (auto-cleanup)
+```
+
+### Configuration
+
+```toml
+[vars]
+TOKEN_BUCKET_CAPACITY = "5"            # max burst size
+TOKEN_REFILL_INTERVAL_MS = "3600000"   # 1 hour between refills
+```
+
+### Expected usage pattern
+
+Aptove Router caches JWTs for ~1 hour and fetches a new one when < 60 seconds of TTL remain. Normal usage: **1 token request per bridge per hour**. The 5-token burst capacity handles startup scenarios where multiple bridges come online simultaneously.
 
 ## KV storage
 

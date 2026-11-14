@@ -150,6 +150,75 @@ The relay verifies every request's Bearer JWT against cf-token's JWKS:
 
 If the JWKS cache doesn't contain the JWT's `kid`, the cache is invalidated and the JWKS is re-fetched immediately (handles key rotation).
 
+## Rate limiting
+
+Every protected endpoint has two layers of rate limiting:
+
+| Tier | Mechanism | Purpose | Cost |
+|------|-----------|---------|------|
+| **Tier 1 — Abuse ceiling** | Cloudflare native `[[ratelimits]]` binding | Hard cutoff for burst abuse/DoS | Zero (no KV) |
+| **Tier 2 — Token bucket** | KV-backed token bucket | Sustained rate control with configurable burst | 1 KV read + 1 KV write per request |
+
+**Request flow:** Tier 1 check → Tier 2 check → process request.
+
+### Per-endpoint limits
+
+| Endpoint | Tier 1 (Cloudflare native) | Tier 2 bucket capacity | Tier 2 refill rate | Sustained max |
+|----------|----------------------------|------------------------|--------------------|--------------:|
+| `POST /push` | 1 req/min per `client_id` | 20 | 1 token per 12 min | 5/hr |
+| `POST /register` | 1 req/min per `client_id` | 5 | 1 token per 1 hr | 1/hr |
+| `GET /health` | 1 req/min per IP | — | — | 1/min |
+
+Authenticated endpoints (`/push`, `/register`) are keyed on the JWT `sub` claim (bridge `client_id`). The public `/health` endpoint is keyed on the client IP via `cf-connecting-ip`.
+
+### Token bucket algorithm
+
+Each client gets a bucket with a fixed **capacity** (max tokens). Every request consumes one token. Tokens refill at a constant **refill interval** up to the capacity, allowing short bursts while enforcing a sustained rate.
+
+```
+Bucket state: { tokens: number, last_refill_at: timestamp }
+KV key:       rl:{endpoint}:{client_id}
+TTL:          24 hours (auto-cleanup of inactive clients)
+
+On each request:
+  1. Read bucket state from KV (first call → full bucket)
+  2. Calculate tokens earned: floor(elapsed / refillIntervalMs)
+  3. Cap at capacity, advance last_refill_at
+  4. tokens > 0 → decrement, write back, allow request
+  5. tokens == 0 → deny with Retry-After header
+```
+
+**Example — push endpoint (capacity=20, refill=12min):**
+- First 20 pushes succeed immediately (burst)
+- After burst, 1 push allowed every 12 minutes (sustained)
+- After idle period, bucket refills up to 20
+
+### Configuration
+
+Token bucket parameters are configurable via `[vars]` in `wrangler.toml`. Override per deployment with `wrangler secret put` or `.dev.vars` locally:
+
+```toml
+[vars]
+PUSH_BUCKET_CAPACITY = "20"               # max burst size
+PUSH_REFILL_INTERVAL_MS = "720000"        # 12 minutes between refills
+REGISTER_BUCKET_CAPACITY = "5"            # max burst size
+REGISTER_REFILL_INTERVAL_MS = "3600000"   # 1 hour between refills
+```
+
+### 429 response
+
+When rate-limited, both tiers return:
+
+```
+HTTP/1.1 429 Too Many Requests
+Retry-After: 720
+Content-Type: application/json
+
+{ "error": "Rate limit exceeded" }
+```
+
+The `Retry-After` header (in seconds) is present when the token bucket is exhausted and indicates how long until the next token is available. The Tier 1 abuse ceiling does not include `Retry-After` — clients should retry after 60 seconds.
+
 ## Variables vs secrets
 
 | Name | Where set | Secret? |
@@ -158,6 +227,10 @@ If the JWKS cache doesn't contain the JWT's `kid`, the cache is invalidated and 
 | `APNS_SANDBOX` | `wrangler.toml` `[vars]` | No |
 | `FCM_PROJECT_ID` | `wrangler.toml` `[vars]` | No |
 | `TOKEN_SERVICE_URL` | `wrangler.toml` `[vars]` | No |
+| `PUSH_BUCKET_CAPACITY` | `wrangler.toml` `[vars]` | No |
+| `PUSH_REFILL_INTERVAL_MS` | `wrangler.toml` `[vars]` | No |
+| `REGISTER_BUCKET_CAPACITY` | `wrangler.toml` `[vars]` | No |
+| `REGISTER_REFILL_INTERVAL_MS` | `wrangler.toml` `[vars]` | No |
 | `APNS_PRIVATE_KEY` | `wrangler secret` | **Yes** |
 | `APNS_KEY_ID` | `wrangler secret` | **Yes** |
 | `APNS_TEAM_ID` | `wrangler secret` | **Yes** |
