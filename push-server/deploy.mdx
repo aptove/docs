@@ -155,8 +155,17 @@ ADMIN_JWT=$(curl -s -X POST https://<your-token-domain>/token \
   -d '{"client_id":"admin-aptove-2026","client_secret":"<ADMIN_CLIENT_SECRET>"}' \
   | jq -r .access_token)
 
-echo $ADMIN_JWT   # should be a long JWT string, not null
+# Verify the token was received without printing it
+[ -n "$ADMIN_JWT" ] && echo "Token acquired." || echo "ERROR: token is empty — check credentials."
 ```
+
+<Callout type="warning">
+Never `echo $ADMIN_JWT` — this writes the token to your terminal history and any logs that capture output.
+Admin JWTs should have a short lifetime (15–60 minutes). Unset the variable when you are done:
+```bash
+unset ADMIN_JWT
+```
+</Callout>
 
 ### 2. Create a push:write client for Aptove Router
 ```bash
