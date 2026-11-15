@@ -149,11 +149,30 @@ Instance A cannot send to Instance B's devices — the JWT signature cannot be f
 
 ## Security Model
 
+### What leaves your machine
+
+Every push notification sent by Aptove Router includes the following fields. These fields travel from your machine to cf-push-relay, and from there to Apple APNs or Google FCM.
+
+| Field | Value | Sent to | Notes |
+|-------|-------|---------|-------|
+| `title` | `"Aptove"` (default) or the agent name | cf-push-relay → APNs / FCM | Shown in the notification banner. Defaults to `"Aptove"` to avoid leaking the agent name (which is derived from the working-directory folder name). Set `push_generic_title = false` in `common.toml` to use the real name instead. |
+| `body` | `"Your agent has new activity"` | cf-push-relay → APNs / FCM | Fixed string — agent response content is never included. |
+| `data.agentName` | The agent name | cf-push-relay → APNs / FCM → iOS | Included in the notification data payload (not the visible banner) so the iOS app knows which agent to open when the user taps the notification. Even with `push_generic_title = true` this field still contains the real agent name. |
+
+Additionally, Aptove Router sends the following to cf-push-relay when registering a device:
+
+| Field | Value | Purpose |
+|-------|-------|---------|
+| `device_token` | APNs / FCM device token (from iOS/Android OS) | Identifies the device to deliver to |
+| `platform` | `"ios"` or `"android"` | Tells the relay which push platform to use |
+
+Nothing else leaves the machine. Agent prompt text, session content, and conversation history are never included in push payloads.
+
 ### What the mobile app shares, and with whom
 
 | Data | Recipient | Channel |
 |------|-----------|---------|
-| APNs/FCM device token | Bridge only | Authenticated WebSocket |
+| APNs/FCM device token | Aptove Router only | Authenticated WebSocket |
 | Nothing | cf-push-relay | Mobile never contacts the relay |
 | Nothing | cf-token | Mobile never contacts the token service |
 
@@ -208,6 +227,23 @@ client_secret = "<secret shown once at creation>"
 ```
 
 Aptove Router clients are provisioned once by the relay operator using the cf-token admin API (see the [cf-token](/push-server/cf-token) page).
+
+### Notification title
+
+By default, Aptove Router sends `"Aptove"` as the notification title. The agent name (which defaults to the working-directory folder name) is not shown in the banner but is still included in the notification data payload so the iOS app can route the tap to the right agent.
+
+To show the agent name in the notification title instead, set `push_generic_title = false`:
+
+```toml
+# ~/.aptove/projects/<your-project-path>/common.toml
+
+push_generic_title = false   # title will be the agent_name value (defaults to folder name)
+agent_name = "Home Office"   # optional: override the folder name shown in the title
+```
+
+<Warning>
+When `push_generic_title = false`, the value of `agent_name` is sent to the push relay and from there to Apple APNs or Google FCM. If your folder name or agent name is a client name, project name, or other sensitive identifier, leave this at the default (`true`).
+</Warning>
 
 ## Pairing Flow
 
