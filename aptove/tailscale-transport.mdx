@@ -127,6 +127,52 @@ Tailscale is a second dependency beyond Aptove Router itself. If the Tailscale d
 
 ---
 
+## Access control on shared tailnets
+
+**Personal tailnet (only your devices):** the default open ACL is fine — no other users are present, so nothing extra is needed.
+
+**Shared / org tailnet:** every tailnet member can reach port 443 on any machine running `tailscale serve`. The 6-digit one-time pairing code and the per-instance auth token defend against accidental or unauthorised pairing, but on a team tailnet you should also restrict access at the network layer so only your own devices can initiate a connection to the Aptove Router host.
+
+### Restricting access with a tag
+
+**Step 1 — Add the tag and ACL rule** in the [Tailscale admin console](https://login.tailscale.com/admin/acls) under **Access Controls**. Merge this into your existing HuJSON policy:
+
+```json
+{
+  "tagOwners": {
+    // Only the tailnet owner can assign this tag to a machine.
+    "tag:aptove-host": ["autogroup:owner"]
+  },
+
+  "acls": [
+    // Your own devices can reach Aptove Router on port 443.
+    // Remove or narrow this rule if you want to allow specific teammates.
+    {
+      "action": "accept",
+      "src":    ["autogroup:self"],
+      "dst":    ["tag:aptove-host:443"]
+    }
+    // ... keep your other existing rules below ...
+  ]
+}
+```
+
+`autogroup:self` matches only devices logged in under your personal Tailscale account — teammates on the same org tailnet are excluded.
+
+**Step 2 — Tag the machine** running Aptove Router:
+
+```bash
+sudo tailscale set --advertise-tags=tag:aptove-host
+```
+
+After the tag is applied and the ACL is saved, only your own devices can open a connection to that machine on port 443. If the ACL changes or the tag is removed, Aptove Router loses reachability and the TUI will show the automatic-retry message until connectivity is restored.
+
+<Note>
+If you want specific teammates to be able to connect, change `"autogroup:self"` to a list of their Tailscale email addresses or add them to the `tagOwners` list for `tag:aptove-host`.
+</Note>
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
