@@ -7,17 +7,19 @@ description: "Prevent the host computer from sleeping while Aptove Router is run
 
 When keep-alive is enabled Aptove Router holds an OS-level power assertion that prevents the computer from sleeping due to inactivity. This keeps the WebSocket connection open indefinitely so the mobile app can reach the agent at any time.
 
-Keep-alive is **enabled by default**. Toggle it at runtime with the `/keep-alive` command or set `keep_alive = false` in `common.toml` to disable it permanently.
+Keep-alive is **disabled by default**. On first run in a new folder Aptove Router asks whether you want to enable it. You can also toggle it at runtime with the `/keep-alive` command or set `keep_alive = true` in `common.toml`.
+
+**Note:** Keep-alive only blocks idle and system sleep. It does not prevent the screen from locking — the display dims and locks after the normal idle timeout as usual. The agent keeps running in the background.
 
 ## Behavior with keep-alive ON
 
 | Event | Display | System | Aptove Router |
 |-------|---------|--------|--------|
-| Idle timeout (no user activity) | Stays on | Stays awake | Continues running |
+| Idle timeout (no user activity) | Dims and locks normally | Stays awake | Continues running |
 | Manual screen lock (Cmd+Ctrl+Q / Win+L) | Locks | Stays awake | Continues running |
 | Laptop lid closed | Turns off | **Sleeps** | Connections drop |
 
-Keep-alive prevents idle sleep but cannot override a lid-close event — that is treated by every OS as a deliberate hardware action. See [Platform notes](#platform-notes) below.
+Keep-alive prevents idle system sleep but cannot override a lid-close event — that is treated by every OS as a deliberate hardware action. See [Platform notes](#platform-notes) below.
 
 ## Behavior with keep-alive OFF
 
@@ -29,13 +31,13 @@ When the computer wakes and Aptove Router is restarted, the mobile app reconnect
 
 ### macOS
 
-Keep-alive uses `IOPMAssertPreventUserIdleDisplaySleep` (via the `keepawake` crate). This prevents both display dimming and system idle sleep. It does **not** prevent sleep triggered by closing the laptop lid.
+Keep-alive uses `IOPMAssertPreventUserIdleSystemSleep` (via the `keepawake` crate). This prevents idle system sleep only. The display dims and the screen locks as normal after the idle timeout. It does **not** prevent sleep triggered by closing the laptop lid.
 
 **Workaround for lid close**: connect an external display and a power source before closing the lid. macOS enters clamshell mode and keeps the system running.
 
 ### Windows
 
-Keep-alive calls `SetThreadExecutionState` with `ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_CONTINUOUS`. This prevents display sleep and idle system sleep. It does not prevent sleep triggered by closing the lid; that is controlled by **Power Options → "When I close the lid"** in the Control Panel.
+Keep-alive calls `SetThreadExecutionState` with `ES_SYSTEM_REQUIRED | ES_CONTINUOUS`. This prevents idle system sleep only. The display turns off and the lock screen activates as normal after the idle timeout. It does not prevent sleep triggered by closing the lid; that is controlled by **Power Options → "When I close the lid"** in the Control Panel.
 
 ### Linux
 
@@ -52,16 +54,16 @@ If keep-alive fails on Linux Aptove Router logs a warning on startup:
 
 Type `/keep-alive` in the TUI input bar to toggle the setting. The status bar shows the current state:
 
-- `[awake ◉]` — keep-alive active, display and idle sleep are prevented
-- `[awake ○]` — keep-alive disabled or guard creation failed
+- `[keep alive ●]` (green) — keep-alive active, idle sleep is prevented; screen can still lock
+- `[keep alive ●]` (red) — keep-alive disabled or guard creation failed
 
 The setting is saved to `common.toml` automatically and persists across Aptove Router restarts. You can also set it manually:
 
 ```toml
 # common.toml
-keep_alive = false
+keep_alive = true
 ```
 
 <Warning>
-If the status bar shows `[awake ○]` but you have keep-alive enabled, check the log panel for a warning message. On Linux this usually means `systemd-inhibit` is not available in the current session.
+If the status bar shows a red indicator but you have keep-alive enabled, check the log panel for a warning message. On Linux this usually means `systemd-inhibit` is not available in the current session.
 </Warning>
