@@ -78,11 +78,19 @@ For all of the above, use [Tailscale](/aptove/tailscale-transport) instead.
 
 ### Port conflict resolution
 
-If the configured port is already in use (for example, because another Aptove Router instance is running from a different folder), Aptove Router automatically scans upward from the configured port and picks the first free one in the range **configured port → configured port + 50**.
+Aptove Router uses a two-stage strategy to ensure each project gets a unique port.
 
-When a different port is chosen:
+**Stage 1 — at setup time (config assignment)**
 
-1. The new port is written back to `common.toml` so subsequent restarts use the same port without needing to scan again.
+When Local transport is first enabled for a project (whether on first run or when switching from another transport), Aptove Router scans all project configs under `~/.aptove/projects/` and picks the lowest port starting from **8765** that is not already claimed by any other project. This assignment is saved immediately to `common.toml`, so two projects never start life with the same configured port — even if neither is running at that moment.
+
+**Stage 2 — at startup time (runtime bind check)**
+
+When the bridge starts, Aptove Router also checks whether the configured port is currently bound on the OS. If it is (for example, because another Aptove Router instance is already running), it scans upward in the range **configured port → configured port + 50**, skipping both actively-bound ports and ports claimed by other project configs.
+
+When a different port is chosen at startup:
+
+1. The new port is written back to `common.toml` so subsequent restarts are stable without re-scanning.
 2. Aptove Router logs a warning: `Port 8765 is already in use; switching to 8766 for 'local' transport.`
 3. The QR pairing popup opens automatically, prompting you to re-scan on your phone.
 
