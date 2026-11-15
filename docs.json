@@ -60,6 +60,7 @@
               "aptove/tui",
               "aptove/keep-alive",
               "aptove/security",
+              "aptove/rotate-token",
               {
                 "group": "Advanced",
                 "pages": [

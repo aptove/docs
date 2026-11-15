@@ -89,7 +89,7 @@ cf-token is a lightweight Cloudflare Worker that acts as an OAuth2-style M2M tok
 4. The relay verifies the JWT signature against the JWKS published by cf-token
 5. The JWT `sub` claim (Aptove Router's `client_id`) is used as the isolation key for device storage
 
-No relay_token is in any request body. No shared secret is passed over the wire — only signed JWTs.
+No relay_token is in any request body. The `client_secret` travels only to **cf-token** over HTTPS to exchange for a JWT; cf-push-relay never sees it — only the short-lived signed JWT is sent to the relay.
 
 ## Key Components
 
