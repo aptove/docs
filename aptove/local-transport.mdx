@@ -110,38 +110,6 @@ Once running, press `/qr` in the TUI to display the pairing QR code.
 
 ---
 
-## Container Usage
-
-When running Aptove Router inside a Docker or Apple Native container, Aptove Router's local IP is the container's internal virtual IP — not your machine's LAN IP. Set `advertise_addr` in `common.toml` to override both the QR code URL **and** the TLS certificate's Subject Alternative Names (SANs) so mobile clients can connect:
-
-```toml
-advertise_addr = "192.168.1.50"
-```
-
-Then start the container, mounting the config directory:
-
-```bash
-# Docker
-docker run -p 8765:8765 \
-  -v "$HOME/Library/Application Support/com.aptove.bridge":/root/.config/bridge \
-  aptove/bridge
-
-# Apple Native container (macOS)
-container run -p 8765:8765 \
-  -v "$HOME/Library/Application Support/com.aptove.bridge":/root/.config/bridge \
-  aptove/bridge
-```
-
-> **Important:** If you add `advertise_addr` for the first time (or change the IP), the existing TLS certificate is regenerated because the SANs changed. You will need to delete the old cert files and re-pair the mobile app:
->
-> ```bash
-> # macOS / Linux
-> CONFIG_DIR=~/.aptove/projects/$(pwd | sed 's|^/||')
-> rm "$CONFIG_DIR/cert.pem" "$CONFIG_DIR/key.pem"
-> ```
-
----
-
 ## Pairing Flow
 
 ### 1. QR Code Display
