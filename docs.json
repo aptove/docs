@@ -82,6 +82,7 @@
               "mobile-app/overview",
               "mobile-app/pairing",
               "mobile-app/features",
+              "mobile-app/permissions",
               "mobile-app/voice-input",
               "mobile-app/tasks"
             ]

@@ -3,7 +3,39 @@ title: "Installation"
 description: "How to install the Aptove on your machine."
 ---
 
-## Shell installer (recommended)
+## Verified install
+
+Download a pinned archive, check its SHA-256, then extract. Nothing runs until you've confirmed the hash.
+
+Replace `TARGET` with your platform:
+
+| Platform | TARGET |
+|----------|--------|
+| macOS ARM | `aarch64-apple-darwin` |
+| macOS Intel | `x86_64-apple-darwin` |
+| Linux ARM | `aarch64-unknown-linux-gnu` |
+| Linux x86\_64 | `x86_64-unknown-linux-gnu` |
+
+```bash
+VERSION=1.2.0
+TARGET=aarch64-apple-darwin   # change to match your platform
+
+curl -LO https://github.com/aptove/aptove/releases/download/v${VERSION}/aptove-${VERSION}-${TARGET}.tar.gz
+curl -LO https://github.com/aptove/aptove/releases/download/v${VERSION}/aptove-${VERSION}-${TARGET}.tar.gz.sha256
+
+shasum -a 256 -c aptove-${VERSION}-${TARGET}.tar.gz.sha256
+
+tar xzf aptove-${VERSION}-${TARGET}.tar.gz
+sudo mv aptove /usr/local/bin/
+```
+
+If you have the [GitHub CLI](https://cli.github.com) installed, you can also verify the build attestation — a cryptographic proof that the binary was produced by the official release workflow and not modified since:
+
+```bash
+gh attestation verify aptove-${VERSION}-${TARGET}.tar.gz --repo aptove/aptove
+```
+
+## Quick install
 
 The quickest way to install on macOS and Linux. Requires no Node.js or Rust toolchain.
 
@@ -34,5 +66,7 @@ Use this if you want to build a specific commit or develop against the Aptove Ro
 
 | Method | Requires | Best for |
 |--------|----------|----------|
-| Shell / PowerShell installer | Nothing extra | Most users |
+| Verified install | curl, shasum | Security-conscious / production |
+| gh attestation verify | GitHub CLI | Strongest provenance check |
+| Quick install (shell script) | Nothing extra | Fast local setup |
 | Build from source | Rust toolchain + git | Contributors / custom builds |
