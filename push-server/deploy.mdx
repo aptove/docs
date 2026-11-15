@@ -201,6 +201,23 @@ Restart Aptove Router. With `log_level = "INFO"` set in `common.toml`, logs shou
 INFO  Push relay: JWT auth (client_id=bridge-home, relay=https://<your-push-domain>)
 ```
 
+#### Notification title
+
+By default the notification banner title is `"Aptove"`. The agent name (which defaults to the working-directory folder name) stays off the banner to avoid leaking a potentially sensitive name to the push relay or Apple / Google.
+
+To show the real agent name in the title, add one line to `common.toml`:
+
+```toml
+push_generic_title = false   # show agent_name in the notification title
+```
+
+You can also customise the displayed name without changing the folder name:
+
+```toml
+push_generic_title = false
+agent_name = "Home Office"   # overrides the folder-name default
+```
+
 ---
 
 ## Part 4 — End-to-End Smoke Test
