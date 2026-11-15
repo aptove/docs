@@ -121,8 +121,8 @@ Revoke a client. Any JWTs already issued for this client will still be valid unt
 |----------|-----------|-------------|
 | `RS_PRIVATE_KEY` | `wrangler secret` | RS256 private key in PKCS#8 PEM format |
 | `ADMIN_CLIENT_SECRET` | `wrangler secret` | Secret for the built-in admin client |
-| `TOKEN_ISSUER` | `wrangler.toml` `[vars]` | `iss` claim in issued JWTs (e.g. `"https://token.aptove.com"`) |
-| `TOKEN_AUDIENCE` | `wrangler.toml` `[vars]` | `aud` claim in issued JWTs (e.g. `"https://push.aptove.com"`) |
+| `TOKEN_ISSUER` | `wrangler.toml` `[vars]` | `iss` claim in issued JWTs (e.g. `"https://<your-token-domain>"`) |
+| `TOKEN_AUDIENCE` | `wrangler.toml` `[vars]` | `aud` claim in issued JWTs (e.g. `"https://<your-push-domain>"`) |
 | `ADMIN_CLIENT_ID` | `wrangler.toml` `[vars]` | Built-in admin client ID — change from `"admin"` before deploying |
 | `TOKEN_BUCKET_CAPACITY` | `wrangler.toml` `[vars]` | Max burst size for `/token` rate limit (default: `"5"`) |
 | `TOKEN_REFILL_INTERVAL_MS` | `wrangler.toml` `[vars]` | Ms between token bucket refills (default: `"3600000"` = 1hr) |
