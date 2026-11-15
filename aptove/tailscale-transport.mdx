@@ -17,6 +17,17 @@ The `tailscale-serve` mode uses `tailscale serve` to proxy HTTPS on port 443 to 
 - Machine enrolled in a tailnet: `tailscale up`
 - **MagicDNS** enabled in the Tailscale admin console
 - **HTTPS certificates** enabled — see [Enabling HTTPS](https://tailscale.com/kb/1153/enabling-https)
+
+  <Warning>
+  Enabling Tailscale HTTPS submits your machine name (e.g. `my-laptop`) to public certificate transparency logs, where it is permanently visible to anyone. If the machine name is sensitive — a client name, project codename, or personal identifier — **rename the machine before enabling HTTPS**:
+
+  ```bash
+  sudo tailscale set --hostname=my-new-name
+  ```
+
+  Tailscale documents this directly on their [Enabling HTTPS](https://tailscale.com/kb/1153/enabling-https) page. Once a name is in a CT log it cannot be removed.
+  </Warning>
+
 - **Mobile devices must be on the same tailnet** — install the Tailscale app on iOS/Android and sign in to the same account before pairing
 
 ---
