@@ -5,8 +5,10 @@ description: "Step-by-step guide to deploying cf-token and cf-push-relay and wir
 
 Two Cloudflare Workers must be deployed before push notifications work:
 
-1. **cf-token** (`token.aptove.com`) — JWT issuance and client registry
-2. **cf-push-relay** (`push.aptove.com`) — device token storage and APNs/FCM dispatch
+1. **cf-token** (`<your-token-domain>`) — JWT issuance and client registry
+2. **cf-push-relay** (`<your-push-domain>`) — device token storage and APNs/FCM dispatch
+
+> Every URL below must point to your own deployment.
 
 **Deploy cf-token first.** The push relay fetches its JWKS on startup and caches it in KV.
 
@@ -70,10 +72,10 @@ wrangler deploy
 
 ### 7. Verify
 ```bash
-curl https://token.aptove.com/health
+curl https://<your-token-domain>/health
 # → {"ok":true,"status":"healthy","timestamp":"..."}
 
-curl https://token.aptove.com/.well-known/jwks.json
+curl https://<your-token-domain>/.well-known/jwks.json
 # → {"keys":[{"kty":"RSA","use":"sig","alg":"RS256","kid":"...","n":"...","e":"AQAB"}]}
 ```
 
@@ -128,7 +130,7 @@ In `wrangler.toml`, confirm:
 [vars]
 APNS_BUNDLE_ID    = "com.aptove.ios"
 APNS_SANDBOX      = "true"            # change to "false" for App Store / TestFlight
-TOKEN_SERVICE_URL = "https://token.aptove.com"
+TOKEN_SERVICE_URL = "https://<your-token-domain>"
 ```
 
 ### 6. Deploy
@@ -138,7 +140,7 @@ wrangler deploy
 
 ### 7. Verify
 ```bash
-curl https://push.aptove.com/health
+curl https://<your-push-domain>/health
 # → {"ok":true,"status":"healthy"}
 ```
 
@@ -148,7 +150,7 @@ curl https://push.aptove.com/health
 
 ### 1. Get an admin JWT
 ```bash
-ADMIN_JWT=$(curl -s -X POST https://token.aptove.com/token \
+ADMIN_JWT=$(curl -s -X POST https://<your-token-domain>/token \
   -H "Content-Type: application/json" \
   -d '{"client_id":"admin-aptove-2026","client_secret":"<ADMIN_CLIENT_SECRET>"}' \
   | jq -r .access_token)
@@ -158,7 +160,7 @@ echo $ADMIN_JWT   # should be a long JWT string, not null
 
 ### 2. Create a push:write client for Aptove Router
 ```bash
-curl -s -X POST https://token.aptove.com/clients \
+curl -s -X POST https://<your-token-domain>/clients \
   -H "Authorization: Bearer $ADMIN_JWT" \
   -H "Content-Type: application/json" \
   -d '{"client_id":"bridge-home","scope":"push:write"}'
@@ -173,15 +175,15 @@ Output:
 Add a `[push_relay]` section to `.aptove/common.toml` in your project directory:
 ```toml
 [push_relay]
-url           = "https://push.aptove.com"
-token_url     = "https://token.aptove.com"
+url           = "https://<your-push-domain>"
+token_url     = "https://<your-token-domain>"
 client_id     = "bridge-home"
 client_secret = "<secret from above>"
 ```
 
 Restart Aptove Router. With `log_level = "INFO"` set in `common.toml`, logs should show:
 ```
-INFO  Push relay: JWT auth (client_id=bridge-home, relay=https://push.aptove.com)
+INFO  Push relay: JWT auth (client_id=bridge-home, relay=https://<your-push-domain>)
 ```
 
 ---
@@ -190,19 +192,19 @@ INFO  Push relay: JWT auth (client_id=bridge-home, relay=https://push.aptove.com
 
 ```bash
 # Get a push:write JWT
-TOKEN=$(curl -s -X POST https://token.aptove.com/token \
+TOKEN=$(curl -s -X POST https://<your-token-domain>/token \
   -H "Content-Type: application/json" \
   -d '{"client_id":"bridge-home","client_secret":"<secret>"}' \
   | jq -r .access_token)
 
 # Register a test device (use a real APNs token from a debug iOS build)
-curl -X POST https://push.aptove.com/register \
+curl -X POST https://<your-push-domain>/register \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"device_token":"<apns-token>","platform":"ios","bundle_id":"com.aptove.ios"}'
 
 # Send a test notification
-curl -X POST https://push.aptove.com/push \
+curl -X POST https://<your-push-domain>/push \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title":"Test","body":"Push relay is live"}'
@@ -212,7 +214,7 @@ curl -X POST https://push.aptove.com/push \
 
 ## Custom Domains
 
-Both workers use custom domains configured in their `wrangler.toml` (`token.aptove.com`, `push.aptove.com`). Cloudflare provisions DNS and TLS automatically when the domain is on the same Cloudflare account — no extra steps needed after `wrangler deploy`.
+Both workers use custom domains configured in their `wrangler.toml` (`<your-token-domain>`, `<your-push-domain>`). Cloudflare provisions DNS and TLS automatically when the domain is on the same Cloudflare account — no extra steps needed after `wrangler deploy`.
 
 If the domain is **not** on Cloudflare, temporarily comment out the `routes` entry in `wrangler.toml` and access the worker via its `workers.dev` subdomain:
 ```

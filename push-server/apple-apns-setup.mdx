@@ -102,7 +102,7 @@ npm run deploy
 
 Verify:
 ```bash
-curl https://push.aptove.com/health
+curl https://<your-push-domain>/health
 ```
 
 ## Security Best Practices
@@ -133,13 +133,13 @@ If your key is compromised:
 
 ```bash
 # 1. Get a JWT from cf-token
-TOKEN=$(curl -s -X POST https://token.aptove.com/token \
+TOKEN=$(curl -s -X POST https://<your-token-domain>/token \
   -H "Content-Type: application/json" \
   -d '{"client_id":"bridge-home","client_secret":"<secret>"}' \
   | jq -r .access_token)
 
 # 2. Register an iOS device token
-curl -X POST https://push.aptove.com/register \
+curl -X POST https://<your-push-domain>/register \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -149,7 +149,7 @@ curl -X POST https://push.aptove.com/register \
   }'
 
 # 3. Send a test push notification
-curl -X POST https://push.aptove.com/push \
+curl -X POST https://<your-push-domain>/push \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title":"Test","body":"Hello from APNs!"}'
