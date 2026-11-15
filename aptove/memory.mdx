@@ -72,6 +72,12 @@ memory_max_kb = 2048   # increase to 2 MB
 
 Restart Aptove Router for the new limit to take effect.
 
+## Backup file
+
+Whenever Aptove Router consolidates `MEMORY.md`, it saves the previous version to `MEMORY.md.bak`
+in the same directory before overwriting. If consolidation is refused (empty result or result too
+small), the original file is left unchanged.
+
 ## Injection behaviour at the limit
 
 If `MEMORY.md` is already over the limit when a new session starts, Aptove Router skips the injection entirely and logs a `WARN`. The session still starts; it just begins without the persistent context.

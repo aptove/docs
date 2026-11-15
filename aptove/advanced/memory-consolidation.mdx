@@ -52,6 +52,22 @@ The client sees no indication any of this happened. The next `session/prompt` wi
 | Agent output consumed | The agent's consolidation response is permanently discarded. If the agent produces anything other than `<merged_memory>` tags (e.g. tool calls, errors), it is lost. |
 | Opacity | Neither the client nor the user knows the agent is being used as a background processing service. |
 
+## Backup and validation
+
+Before overwriting `MEMORY.md`, Aptove Router:
+
+1. **Backs up the current file** to `MEMORY.md.bak` in the same directory.
+   If the backup write fails, a `WARN` is logged and the overwrite proceeds anyway.
+
+2. **Validates the consolidated content** before writing:
+   - If the result is **empty**, the overwrite is refused (`ERROR` log; original file unchanged).
+   - If the result is **less than 20% of the original file size**, the overwrite is refused
+     (`ERROR` log; original file unchanged). This guards against truncated or failed agent responses.
+
+A failed consolidation always leaves the original `MEMORY.md` intact.
+`MEMORY.md.bak` holds the last successfully backed-up version; it is overwritten on each successful
+consolidation cycle.
+
 ## Alternative if removed
 
 `MEMORY.md` grows with each `bridge/appendMemory` until it hits the size limit. Consolidation would need to be a user-initiated action (e.g. a `/compact-memory` slash command) that the client sends explicitly, making the round-trip visible and intentional.
