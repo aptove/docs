@@ -144,6 +144,10 @@ Tailscale is a second dependency beyond Aptove Router itself. If the Tailscale d
 
 **Shared / org tailnet:** every tailnet member can reach port 443 on any machine running `tailscale serve`. The 6-digit one-time pairing code and the per-instance auth token defend against accidental or unauthorised pairing, but on a team tailnet you should also restrict access at the network layer so only your own devices can initiate a connection to the Aptove Router host.
 
+<Note>
+**Rate limits are shared across the tailnet.** Because `tailscale serve` proxies all traffic through localhost, Aptove Router sees every tailnet device as `127.0.0.1`. The pairing-code brute-force limit (5 failed attempts) and the WebSocket connection rate limit (10 concurrent, 30/minute) therefore apply to the tailnet as a whole rather than per-device. On a personal tailnet this is harmless. On a shared tailnet, use the ACL rule below to restrict which devices can connect at all — this provides far stronger isolation than rate limits alone.
+</Note>
+
 ### Restricting access with a tag
 
 **Step 1 — Add the tag and ACL rule** in the [Tailscale admin console](https://login.tailscale.com/admin/acls) under **Access Controls**. Merge this into your existing HuJSON policy:

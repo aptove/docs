@@ -132,10 +132,14 @@ This limit is hardcoded. Legitimate webhook tokens are never anywhere near this 
 
 | Parameter | Value | Configurable |
 |-----------|-------|--------------|
-| Max failed attempts per code | 5 | No |
+| Max failed attempts per code, per source IP | 5 | No |
 | Code lifetime | 60 seconds | No |
 
-After 5 failed verification attempts the current code is invalidated. Codes automatically renew every 60 seconds, at which point the QR code displayed in the TUI updates. The renewed code resets the failed-attempt counter.
+After 5 failed verification attempts **from the same IP address** the current code is invalidated for that address. Codes automatically renew every 60 seconds, at which point the QR code displayed in the TUI updates. The renewed code resets all per-IP counters.
+
+**Reverse-proxy support:** When Aptove Router sits behind a local reverse proxy (e.g. nginx on localhost), the `X-Forwarded-For` or `X-Real-IP` header is used as the effective client IP, so each upstream device gets its own counter. Forwarding headers are only trusted when the TCP connection arrives from a loopback address (`127.0.0.1` / `::1`).
+
+**Tailscale limitation:** `tailscale serve` does not inject `X-Forwarded-For`. All tailnet peers connect through `127.0.0.1` with no forwarding header, so the 5-attempt counter is shared across the entire tailnet rather than per-device. If a misconfigured or misbehaving device on your tailnet exhausts the limit, use `/qr` in the Aptove Router TUI to generate a fresh code and reset all counters immediately — no restart needed.
 
 ---
 
@@ -148,4 +152,6 @@ After 5 failed verification attempts the current code is invalidated. Codes auto
 | Max concurrent connections per IP | 10 | No |
 | Max connection attempts per minute per IP | 30 | No |
 
-Connections that exceed either limit are rejected immediately. These limits are applied per-IP before the WebSocket handshake is completed.
+Connections that exceed either limit are rejected immediately at the TCP accept stage, before any HTTP or WebSocket processing.
+
+**Tailscale limitation:** These limits are enforced on the TCP source address. Under `tailscale serve`, all tailnet devices connect through `127.0.0.1`, so the 10-connection and 30-attempts-per-minute limits are shared across the whole tailnet rather than per-device. For typical usage this is not a problem — normal Tailscale clients do not connect 30 times per minute. If stricter per-device isolation is required, enforce it via [Tailscale ACLs](/aptove/tailscale-transport#access-control-on-shared-tailnets).
