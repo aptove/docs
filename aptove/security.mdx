@@ -1,11 +1,68 @@
 ---
 title: "Security & Resource Limits"
-description: "Resource limits and security controls built into Aptove Router, with defaults and configuration options."
+description: "Threat model, transport security, and resource limits for Aptove Router."
 ---
 
-Aptove Router enforces several resource limits to protect against memory exhaustion, oversized inputs, and abuse. This page documents each limit — what it protects against, its default value, how to configure it, and what happens when it is reached.
+This page covers the trust model of a paired device, what different transport modes protect against, and the resource limits that guard against abuse.
 
 ---
+
+## Threat model
+
+### What a paired device can do
+
+Pairing grants a device a long-lived bearer token. Any client that presents that token can:
+
+- Send arbitrary prompts to the agent process — including prompts that ask it to run shell commands, read and write files, or make network requests.
+- Browse directories and read file contents (via the `bridge/files/*` protocol).
+- Schedule tasks that fire prompts automatically.
+- Append to the agent's persistent memory.
+
+The agent process runs as the host OS user. Its reach is exactly whatever that user can do on the machine. **Aptove Router does not sandbox the agent.** A paired phone has, in effect, the same reach as the person sitting at the keyboard.
+
+### If your phone is stolen
+
+The bearer token is stored in the iOS Keychain, encrypted by the device passcode and biometrics. An attacker who obtains the unlocked phone — or who extracts the Keychain by other means — has full agent access until the token is rotated.
+
+**Tokens do not expire on their own.** To cut off access immediately:
+
+1. Open the Aptove Router TUI and run `/rotate-token`.
+2. The old token is invalidated within seconds; any reconnect attempt from the stolen device receives **HTTP 401**.
+3. Re-pair your remaining devices by scanning the new QR code.
+
+See [Rotating the Auth Token](/aptove/rotate-token) for the full procedure, including how to remove a stolen device's push token from the relay.
+
+### Transport security
+
+Each transport mode defends against a different attacker profile:
+
+| Transport | Protected against | Not protected against |
+|-----------|------------------|----------------------|
+| **Local** | Internet-side attackers (the port is behind NAT and never intentionally exposed); post-pairing LAN eavesdroppers (TLS with cert fingerprint pinned at pairing time) | Someone on the LAN who intercepts the QR code and races to claim the one-time pairing code before you do; anyone who already holds a valid bearer token |
+| **Tailscale** | Internet attackers; LAN eavesdroppers; passive traffic interception (WireGuard encrypts all tailnet traffic end-to-end) | Other Tailscale users on the same tailnet who discover your machine's MagicDNS hostname; anyone who already holds a valid bearer token |
+
+The bearer token is the last line of defence in both cases. Keep the QR code off shared screens and rotate the token if a device is lost.
+
+### Out of scope
+
+The following are not mitigated by Aptove Router and must be managed at the host or network level:
+
+- **Agent sandboxing** — the agent process inherits the full permissions of the host OS user. Restrict this at the OS level (a dedicated low-privilege user, macOS sandbox profiles, container isolation) if that matters for your threat model.
+- **Multi-user access control** — there is one shared token, not per-user accounts. Everyone who pairs has equal access.
+- **Prompt injection** — a malicious document or web page that the agent reads could try to hijack the agent's actions. Aptove Router does not inspect or filter agent outputs.
+- **Tailscale admin access** — a Tailscale network administrator who can manipulate routing could affect reachability. Tailscale itself provides WireGuard encryption between peers.
+
+### Reporting a vulnerability
+
+Security issues can be reported by e-mail to **saltukalakus@gmail.com**. Please allow one week for a response. Responsible disclosures are kept confidential until a patch is released.
+
+The full security policy, including supported versions and responsible-disclosure terms, is in [`SECURITY.md`](https://github.com/aptove/aptove/blob/main/SECURITY.md) in the Aptove repository.
+
+---
+
+## Resource limits
+
+Aptove Router enforces the following limits to protect against memory exhaustion, oversized inputs, and abuse.
 
 ## 1. WebSocket message size (`ws_max_message_mb`)
 
