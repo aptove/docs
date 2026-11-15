@@ -14,7 +14,7 @@ When Aptove Router starts for the first time (no `agent_name` in `common.toml`),
 ```
 $ cd ~/code/my-project
 $ aptove
-# → agent_name = "my-project" written to .aptove/common.toml
+# → agent_name = "my-project" written to common.toml
 ```
 
 This default is immediately persisted to `common.toml` so subsequent restarts use the same value without re-deriving it.
@@ -27,7 +27,7 @@ This default is immediately persisted to `common.toml` so subsequent restarts us
 
 ## How to set it manually
 
-Edit `.aptove/common.toml` directly:
+Edit `~/.aptove/projects/<your-project-path>/common.toml` directly:
 
 ```toml
 agent_name = "My Work Assistant"

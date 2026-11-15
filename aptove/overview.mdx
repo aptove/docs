@@ -51,18 +51,16 @@ After setup, Aptove Router starts and immediately shows a QR code for pairing yo
 
 ## Running from a folder
 
-Aptove Router is folder-aware. Every time you run `aptove` it looks for (or creates) a `.aptove/` directory **in the current working directory**. All configuration, credentials, and certificates for that instance live there.
+Aptove Router is folder-aware. Every time you run `aptove` it derives a config directory from the current working directory, stored under `~/.aptove/projects/`. Each project folder gets its own isolated config — credentials and certificates never land inside the project itself.
 
 ```
-~/projects/
-  work-agent/
-    .aptove/      ← config for this Aptove Router instance
-      common.toml
-      cert.pem / key.pem
-  personal-agent/
-    .aptove/      ← separate config, separate identity
-      common.toml
-      cert.pem / key.pem
+~/.aptove/projects/
+  Users/alice/projects/work-agent/      ← config for work-agent instance
+    common.toml
+    cert.pem / key.pem
+  Users/alice/projects/personal-agent/  ← separate config, separate identity
+    common.toml
+    cert.pem / key.pem
 ```
 
 You can also point Aptove Router at a specific config directory with the `--config-dir` flag:
@@ -77,11 +75,11 @@ You can run as many Aptove Router instances as you like simultaneously — one p
 
 - Each instance has its own agent identity (`agentId`), auth token, and TLS certificate.
 - Each appears as a separate agent entry in the Aptove mobile app.
-- Only one Aptove Router instance may run from the same folder at a time (enforced by a per-folder lock file).
+- Only one Aptove Router instance may run from the same directory at a time (enforced by a per-directory lock file).
 
 Each Aptove Router instance needs a unique TCP port. By default all instances try port **8765**. If that port is already taken, Aptove Router automatically finds the next free port in the range 8765–8815, saves it to `common.toml`, and starts normally. See the [Local Transport](/aptove/local-transport#port-conflict-resolution) docs for details.
 
 ## Configuration file
 
-All settings are stored in `common.toml` inside the `.aptove/` directory created wherever you ran Aptove Router. See [Configuration](/aptove/configuration) for the full reference.
+All settings are stored in `common.toml` inside `~/.aptove/projects/<your-project-path>/`. See [Configuration](/aptove/configuration) for the full reference.
 

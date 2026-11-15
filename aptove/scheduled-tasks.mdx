@@ -7,7 +7,7 @@ description: "Run AI prompts on a schedule — one-time or recurring (daily, wee
 
 Scheduled tasks let you define text-based prompts that Aptove Router automatically sends to the AI agent at specific times. Each task creates a new session, sends the prompt, and the agent responds as if it were a regular conversation. Responses are buffered and push-notified if the mobile app is not connected.
 
-Tasks are stored as individual JSON files in `.aptove/tasks/`. The built-in scheduler checks for due tasks every 60 seconds.
+Tasks are stored as individual JSON files in `~/.aptove/projects/<your-project-path>/tasks/`. The built-in scheduler checks for due tasks every 60 seconds.
 
 ## Task types
 
@@ -39,7 +39,7 @@ The default task is deletable. If deleted, it will be recreated on the next brid
 
 ## Storage format
 
-Each task is a JSON file at `.aptove/tasks/{uuid}.json`:
+Each task is a JSON file at `~/.aptove/projects/<your-project-path>/tasks/{uuid}.json`:
 
 ```json
 {
@@ -67,7 +67,7 @@ When Aptove Router restarts after being down, any **enabled** task whose `nextRu
 
 ### Per-agent scope
 
-Tasks are per-agent — stored in the agent's `.aptove/tasks/` directory. Each agent instance has its own independent set of tasks.
+Tasks are per-agent — stored in the agent's `~/.aptove/projects/<your-project-path>/tasks/` directory. Each agent instance has its own independent set of tasks.
 
 ### Memory injection
 
@@ -87,10 +87,13 @@ Tasks are managed via `bridge/*` JSON-RPC methods:
 
 ## Managing tasks from the command line
 
-You can also create tasks by writing JSON files directly to `.aptove/tasks/`:
+You can also create tasks by writing JSON files directly to the tasks directory:
 
 ```bash
-cat > .aptove/tasks/my-task.json << 'EOF'
+# macOS / Linux
+TASKS_DIR=~/.aptove/projects/$(pwd | sed 's|^/||')/tasks
+mkdir -p "$TASKS_DIR"
+cat > "$TASKS_DIR/my-task.json" << 'EOF'
 {
   "id": "my-custom-task",
   "name": "Weekly report",

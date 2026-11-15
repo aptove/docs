@@ -5,7 +5,14 @@ description: "Complete reference for common.toml — Aptove Router's single conf
 
 ## Location
 
-Aptove Router stores its config in `common.toml` inside the `.aptove/` directory, which is created in the working directory where you ran Aptove Router.
+Aptove Router stores its config in `common.toml` inside a per-project directory under your home folder, keyed by the working directory where you ran Aptove Router:
+
+| Platform | Config directory |
+|----------|-----------------|
+| macOS / Linux | `~/.aptove/projects/<your-project-path>/` |
+| Windows | `%APPDATA%\Aptove\projects\<your-project-path>\` |
+
+For example, if you run `aptove` from `/Users/alice/code/my-project`, the config lives at `~/.aptove/projects/Users/alice/code/my-project/common.toml`.
 
 The file is created automatically by the setup wizard. You can also edit it manually — Aptove Router re-reads it on the next start.
 

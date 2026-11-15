@@ -5,10 +5,10 @@ description: "Where Aptove Router writes log files and how to configure their si
 
 ## File location
 
-Aptove Router writes all log output to files inside the `.aptove/logs/` directory, created automatically in the working directory where Aptove Router is launched:
+Aptove Router writes all log output to files inside the `logs/` subdirectory of the project config directory (see [Configuration](/aptove/configuration) for the base path):
 
 ```
-.aptove/
+~/.aptove/projects/<your-project-path>/
 └── logs/
     ├── aptove.log        ← current log file
     ├── aptove.log.1      ← previous (most recent rotation)

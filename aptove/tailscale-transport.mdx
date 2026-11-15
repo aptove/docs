@@ -23,7 +23,7 @@ The `tailscale-serve` mode uses `tailscale serve` to proxy HTTPS on port 443 to 
 
 ## Configuration
 
-Enable Tailscale in `.aptove/common.toml`:
+Enable Tailscale in `~/.aptove/projects/<your-project-path>/common.toml`:
 
 ```toml
 [transports.tailscale-serve]
@@ -40,7 +40,7 @@ No port or TLS fields needed — Tailscale handles HTTPS on port 443 and routes 
 aptove
 ```
 
-Transport mode is read from `.aptove/common.toml` — no extra flags needed.
+Transport mode is read from the project config directory — no extra flags needed.
 
 ---
 
@@ -102,12 +102,12 @@ my-laptop.tail1234.ts.net
 
 Each instance:
 
-1. Derives a unique path prefix from the first 8 characters of its `agentId` (auto-generated UUID stored in `.aptove/common.toml`).
+1. Derives a unique path prefix from the first 8 characters of its `agentId` (auto-generated UUID stored in `common.toml`).
 2. Registers its own route via `tailscale serve --https=443 /<prefix> http://localhost:<port>`.
 3. Auto-resolves port conflicts — if `8766` is taken, it scans upward and picks the next free port.
 4. Cleans up only its own route on exit — other instances are unaffected.
 
-No manual configuration is needed. Each folder gets its own `.aptove/common.toml` with a unique `agentId`, so the path prefix is stable across restarts.
+No manual configuration is needed. Each project directory gets its own config under `~/.aptove/projects/` with a unique `agentId`, so the path prefix is stable across restarts.
 
 The mobile app pairs with each instance independently via its QR code and shows them as separate agents.
 

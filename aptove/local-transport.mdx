@@ -3,7 +3,18 @@ title: "Local Transport"
 description: "Connect the Aptove app to Aptove Router over your local network using TLS-pinned WebSockets."
 ---
 
-The local transport enables secure connections between client apps (iOS, Android, desktop) and Aptove Router running on the same local network. This is ideal for development, local-first deployments, and scenarios where Tailscale isn't available.
+The local transport enables secure connections between client apps (iOS, Android, desktop) and Aptove Router over the same local network.
+
+**Use local transport when:**
+- Your phone and computer are on the **same home or office Wi-Fi**
+- You are running a **desktop client on the same machine** as Aptove Router
+- You are on a **shared office LAN** where all devices are on the same subnet
+
+**Use [Tailscale](/aptove/tailscale-transport) instead when:**
+- Your phone is on **cellular (5G/LTE)** or a different Wi-Fi network
+- You are **working remotely** and connecting back to your machine
+- Aptove Router is running on a **cloud VM**
+- You have a **router port-forward** or are on **public Wi-Fi**
 
 ## Overview
 
@@ -34,7 +45,7 @@ port    = 8765    # default: 8765
 tls     = true    # default: true
 ```
 
-**Config file location:** `.aptove/common.toml` in the directory where you run `aptove`.
+**Config file location:** `~/.aptove/projects/<your-project-path>/common.toml` — see [Configuration](/aptove/configuration) for the full path formula.
 
 ### Additional config fields
 
@@ -50,9 +61,20 @@ Example:
 
 ```toml
 agent_command  = "copilot --acp"
-bind_address   = "0.0.0.0"
 advertise_addr = "192.168.1.50"
 ```
+
+<Warning>
+**Local transport is not recommended for these scenarios:**
+
+- Phone on **cellular (5G/LTE)** — your phone and computer are on different networks; they cannot reach each other directly
+- **Remote work** — connecting from a different network or location than your machine
+- **Cloud VM** — the machine has a public IP reachable from anywhere on the internet
+- **Router port-forward** — exposes the port to the internet even if unintentional
+- **Public Wi-Fi** — other guests on the same network may be able to reach the port
+
+For all of the above, use [Tailscale](/aptove/tailscale-transport) instead.
+</Warning>
 
 ### Port conflict resolution
 
@@ -105,7 +127,9 @@ container run -p 8765:8765 \
 > **Important:** If you add `advertise_addr` for the first time (or change the IP), the existing TLS certificate is regenerated because the SANs changed. You will need to delete the old cert files and re-pair the mobile app:
 >
 > ```bash
-> rm .aptove/cert.pem .aptove/key.pem
+> # macOS / Linux
+> CONFIG_DIR=~/.aptove/projects/$(pwd | sed 's|^/||')
+> rm "$CONFIG_DIR/cert.pem" "$CONFIG_DIR/key.pem"
 > ```
 
 ---
@@ -230,13 +254,17 @@ The current extra SANs are persisted in `cert-extra-sans.json` so Aptove Router 
 **Rotate TLS certificate only** (invalidates all paired devices — they must re-scan):
 
 ```bash
-rm .aptove/cert.pem .aptove/key.pem
+# macOS / Linux
+CONFIG_DIR=~/.aptove/projects/$(pwd | sed 's|^/||')
+rm "$CONFIG_DIR/cert.pem" "$CONFIG_DIR/key.pem"
 ```
 
 **Full reset** (regenerates cert, auth token, and agent ID):
 
 ```bash
-rm .aptove/cert.pem .aptove/key.pem .aptove/common.toml
+# macOS / Linux
+CONFIG_DIR=~/.aptove/projects/$(pwd | sed 's|^/||')
+rm "$CONFIG_DIR/cert.pem" "$CONFIG_DIR/key.pem" "$CONFIG_DIR/common.toml"
 ```
 
 Then re-run `aptove`.
@@ -330,8 +358,8 @@ port    = 8765   # unique per folder
 
 | Feature | Local | Tailscale |
 |---------|-------|-----------|
-| Internet access | No — same network only | Yes — tailnet |
+| Connectivity | Same LAN only (by design) | Any network via tailnet |
 | Setup complexity | None | Tailscale required |
 | Latency | Minimal | Minimal (direct) |
 | TLS certificate | Self-signed (pinned) | Tailscale managed (serve) / self-signed (ip) |
-| Best for | Development, LAN | Team / personal mesh |
+| Best for | Dev machine, home Wi-Fi, office LAN | Cellular, remote work, cloud VMs |
