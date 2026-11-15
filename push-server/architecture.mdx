@@ -10,7 +10,7 @@ Aptove Router implements a secure push notification system that enables mobile a
 ```
 ┌──────────────────┐         ┌──────────────────┐        ┌─────────────────────┐
 │   Mobile App     │         │   Aptove Router     │        │   cf-token Worker   │
-│  (iOS/Android)   │         │  (Your Machine)  │        │  token.aptove.com   │
+│  (iOS/Android)   │         │  (Your Machine)  │        │  <your-token-domain>   │
 └──────────────────┘         └──────────────────┘        └─────────────────────┘
          │                            │                             │
          │  1. Scan QR Code           │                             │
@@ -34,7 +34,7 @@ Aptove Router implements a secure push notification system that enables mobile a
          │                            │
          │           ┌────────────────┴──────────────────┐
          │           │       cf-push-relay Worker        │
-         │           │       push.aptove.com             │
+         │           │       <your-push-domain>             │
          │           └────────────────┬──────────────────┘
          │                            │  5. POST /register
          │                            │──────────────────────────►
@@ -93,14 +93,14 @@ No relay_token is in any request body. No shared secret is passed over the wire 
 
 ## Key Components
 
-### 1. cf-token (token.aptove.com)
+### 1. cf-token (<your-token-domain>)
 - Issues RS256 JWTs to authenticated Aptove Router clients
 - Publishes JWKS at `/.well-known/jwks.json` (public, cached 1h)
 - Stores client registry in Cloudflare KV (hashed secrets, PBKDF2-SHA256)
 - Admin endpoints to create and revoke Aptove Router clients
 - RSA-2048 private key stored as Cloudflare Secret (never in code or KV)
 
-### 2. cf-push-relay (push.aptove.com)
+### 2. cf-push-relay (<your-push-domain>)
 - Accepts device token registration and push requests from Aptove Router instances
 - Verifies RS256 Bearer JWTs against cf-token JWKS (KV-cached, rotation-safe)
 - Stores device tokens in KV under `devices:<client_id>`
@@ -187,8 +187,8 @@ Push notifications are configured entirely via `.aptove/common.toml`. All four f
 
 ```toml
 [push_relay]
-url           = "https://push.aptove.com"   # cf-push-relay base URL
-token_url     = "https://token.aptove.com"  # cf-token base URL
+url           = "https://<your-push-domain>"   # cf-push-relay base URL
+token_url     = "https://<your-token-domain>"  # cf-token base URL
 client_id     = "bridge-home-office"        # provisioned via POST /clients on cf-token
 client_secret = "<secret shown once at creation>"
 ```
@@ -206,7 +206,7 @@ When a mobile app scans the Aptove Router QR code, Aptove Router returns a JSON 
   "version": "1.0.0",
   "authToken": "...",
   "certFingerprint": "SHA256:...",
-  "pushRelayUrl": "https://push.aptove.com"
+  "pushRelayUrl": "https://<your-push-domain>"
 }
 ```
 
@@ -219,7 +219,7 @@ The mobile app uses `pushRelayUrl` as a signal: if present, request notification
 Before the first push relay request (and when the cached JWT is within 60s of expiry):
 
 ```
-Aptove Router → POST https://token.aptove.com/token
+Aptove Router → POST https://<your-token-domain>/token
              Content-Type: application/json
              { "client_id": "bridge-home-office", "client_secret": "..." }
 
@@ -244,7 +244,7 @@ Aptove Router caches JWT until (now + 3600s - 60s), then refreshes proactively.
 
 **2. Aptove Router → cf-push-relay (HTTP):**
 ```
-POST https://push.aptove.com/register
+POST https://<your-push-domain>/register
 Authorization: Bearer <jwt>
 Content-Type: application/json
 
@@ -262,7 +262,7 @@ Content-Type: application/json
 Triggered automatically when an agent produces output and no WebSocket client is connected:
 
 ```
-POST https://push.aptove.com/push
+POST https://<your-push-domain>/push
 Authorization: Bearer <jwt>
 Content-Type: application/json
 
@@ -285,7 +285,7 @@ cf-push-relay looks up `devices:<client_id>` from the JWT `sub` and dispatches t
 
 **Aptove Router → cf-push-relay:**
 ```
-DELETE https://push.aptove.com/register
+DELETE https://<your-push-domain>/register
 Authorization: Bearer <jwt>
 Content-Type: application/json
 
@@ -357,19 +357,19 @@ aptove/core/src/
 
 ```bash
 # 1. Fetch a push:write JWT
-TOKEN=$(curl -s -X POST https://token.aptove.com/token \
+TOKEN=$(curl -s -X POST https://<your-token-domain>/token \
   -H "Content-Type: application/json" \
   -d '{"client_id":"bridge-home-office","client_secret":"<secret>"}' \
   | jq -r .access_token)
 
 # 2. Register a test device
-curl -X POST https://push.aptove.com/register \
+curl -X POST https://<your-push-domain>/register \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"device_token":"test-token","platform":"ios","bundle_id":"com.aptove.ios"}'
 
 # 3. Send a test notification
-curl -X POST https://push.aptove.com/push \
+curl -X POST https://<your-push-domain>/push \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title":"Test","body":"Push relay is working"}'
@@ -385,7 +385,7 @@ curl -X POST https://push.aptove.com/push \
 Set `log_level = "INFO"` in `.aptove/common.toml` to see push events in the TUI log panel:
 
 ```
-INFO  Push relay: JWT auth (client_id=bridge-home-office, relay=https://push.aptove.com)
+INFO  Push relay: JWT auth (client_id=bridge-home-office, relay=https://<your-push-domain>)
 INFO  Fetched push relay JWT (expires in 3600s)
 INFO  Registered ios device token with push relay
 INFO  Sending push notification via relay
