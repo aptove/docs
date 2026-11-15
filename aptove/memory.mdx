@@ -31,17 +31,20 @@ Open `~/.aptove/projects/<your-project-path>/MEMORY.md` in any text editor and s
 
 ## Size limit
 
-Large memory files slow down every session start because the content is injected into the agent's context window. Aptove Router enforces a configurable size limit:
+The entire `MEMORY.md` file is injected into the agent's context at the start of every new session. Larger files consume more of the context window and leave less room for the conversation itself.
 
 | Setting | Default | Unit |
 |---------|---------|------|
 | `memory_max_kb` | `1024` | kilobytes |
 
+**Context cost:** 1 KB of plain text is roughly 250 tokens. At the 1 024 KB default the memory file alone can consume ~250 000 tokens — more than the context window of many models. For most uses, keeping `MEMORY.md` under 32 KB (≈ 8 000 tokens) is a safe budget.
+
 Set this in `common.toml`:
 
 ```toml
-# Maximum size of MEMORY.md (default: 1024 KB = 1 MB).
-memory_max_kb = 1024
+# Maximum size of MEMORY.md. Lower values leave more room for the conversation.
+# 32 KB ≈ 8 000 tokens — a comfortable budget for most models.
+memory_max_kb = 32
 ```
 
 ## Warning behaviour

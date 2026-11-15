@@ -51,7 +51,7 @@ When Aptove Router starts a new session (or loads an existing one), it sends an 
 The app displays a command picker when the user types `/`. Selecting a command with `input_hint` opens an additional text field before sending.
 
 <Note>
-If the agent itself sends `available_commands_update`, those commands take precedence and the `common.toml` list is not injected — Aptove Router only injects when the agent doesn't send the notification itself.
+Aptove Router always injects the `common.toml` command list after every session start, regardless of whether the agent also sends its own `available_commands_update`. If the agent sends one too, the app receives both notifications; the second one (usually the agent's) overwrites the first. See [Slash Command Injection](/aptove/advanced/commands-injection) for full details.
 </Note>
 
 ## Example: Copilot CLI

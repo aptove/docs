@@ -105,8 +105,14 @@ client_secret = "your-client-secret"
 | `agent_command` | string | — | Shell command to launch the AI agent (e.g. `"copilot --acp"`). |
 | `bind_address` | string | `"0.0.0.0"` | TCP address the WebSocket server binds to. |
 | `advertise_addr` | string | auto-detected | Override the LAN IP included in the pairing QR code. |
-| `keep_alive` | bool | `true` | Prevent system sleep while Aptove Router is running. |
+| `keep_alive` | bool | `false` | Prevent system sleep while Aptove Router is running. |
 | `log_level` | string | `"WARN"` | Minimum log level shown in the TUI (`ERROR` / `WARN` / `INFO` / `DEBUG` / `TRACE`). |
+| `log_file_max_mb` | integer | `10` | Maximum size of each log file in MB before rotation. |
+| `log_file_count` | integer | `5` | Number of rotated log files to keep under `~/.aptove/projects/<path>/logs/`. |
+| `log_message_content` | bool | `false` | Include raw message content (prompts and agent replies) in log files. Off by default — conversation text never reaches disk. Enable only for short-lived debugging. |
+| `memory_max_kb` | integer | `1024` | Maximum size of `MEMORY.md` in KB. Aptove Router warns at 80% and blocks new appends at 100%. **Note:** the entire file is injected into the agent's context at session start; at 1024 KB (≈ 250 000 tokens) this may exceed many models' context windows. Consider keeping this well under 100 KB. |
+| `ws_max_message_mb` | integer | `50` | Maximum WebSocket message size in MB. Increase if you send large image attachments. |
+| `agent_name` | string | *(folder name)* | User-visible name for this agent instance, shown in push notification titles. Defaults to the working directory folder name. Can also be updated from the mobile app. |
 | `push_selection` | string | *(unset)* | Active push provider: `"none"`, `"aptove"`, or `"custom"`. Not present until the user makes a push choice. Setting to `"none"` disables push without erasing credentials. Each provider stores credentials in its own section (`[aptove_push_relay]` / `[custom_push_relay]`) so they never overwrite each other. |
 
 ### `[transports.<name>]`

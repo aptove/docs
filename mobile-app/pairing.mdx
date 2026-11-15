@@ -59,6 +59,14 @@ After pairing, the app stores the following in the system Keychain, keyed by the
 
 Credentials are never stored in plain text or synced to iCloud.
 
+## Code renewal
+
+The 6-digit pairing code in the QR is a one-time code — it expires after 60 seconds or immediately after a successful scan.
+
+- A fresh code is generated **every time** you open `/qr` in the Aptove Router TUI.
+- If the code expires while the popup is open, it renews automatically — no need to close and reopen.
+- After five consecutive wrong code attempts the connection is rate-limited. Type `/qr` again to get a new code and reset the counter. **You do not need to restart Aptove Router.**
+
 ## Reconnection
 
 The app attempts to reconnect automatically:

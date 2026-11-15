@@ -23,7 +23,7 @@ Keep-alive prevents idle system sleep but cannot override a lid-close event — 
 
 ## Behavior with keep-alive OFF
 
-The OS applies its normal power schedule. On most machines this means the system sleeps after several minutes of inactivity, dropping all open WebSocket connections. The Aptove Router process itself is suspended; the agent process is killed by the OS when the machine sleeps.
+The OS applies its normal power schedule. On most machines this means the system sleeps after several minutes of inactivity, dropping all open WebSocket connections. Both the Aptove Router process and the agent process are suspended by the OS when the machine sleeps — they are not killed.
 
 When the computer wakes and Aptove Router is restarted, the mobile app reconnects automatically the next time it is foregrounded. Sessions are preserved for up to 30 minutes after the last connection; after that Aptove Router starts a fresh session.
 

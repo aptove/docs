@@ -63,16 +63,16 @@ The behaviour of the enabled toggle depends on the task type:
 | **One-time** | Always ON (grayed out) | No — a one-time task is either waiting to run or it's deleted after running |
 | **Recurring** | Interactive | Yes — disabling pauses execution without deleting the task |
 
-Disabling a recurring task keeps it stored on the bridge. It will not execute while disabled, but it retains its schedule and can be re-enabled at any time.
+Disabling a recurring task keeps it stored in Aptove Router. It will not execute while disabled, but it retains its schedule and can be re-enabled at any time.
 
 If you change a recurring task to **Once** in the editor and save, it is automatically re-enabled regardless of its previous state.
 
 ## Default task: Compact Memory
 
-Every agent comes with a default "Compact Memory" task that runs daily at 4:00 AM. This task automatically cleans up and consolidates your agent's memory file, removing duplicates and outdated entries. You can delete this task if you don't want automatic memory compaction — it will be recreated if you restart the bridge.
+Every agent comes with a default "Compact Memory" task that runs daily at 4:00 AM. This task automatically cleans up and consolidates your agent's memory file, removing duplicates and outdated entries. You can delete this task if you don't want automatic memory compaction — it will be recreated if you restart Aptove Router.
 
 ## How it works
 
-Tasks are stored on the bridge (not on your phone). When you create a task, it's sent to the bridge and saved as a JSON file. The bridge's scheduler checks every 60 seconds for due tasks and runs them autonomously — even if your phone is off or disconnected. Responses are buffered and delivered when you reconnect.
+Tasks are stored in Aptove Router (not on your phone). When you create a task, it's sent to Aptove Router and saved as a JSON file. Aptove Router's scheduler checks every 60 seconds for due tasks and runs them autonomously — even if your phone is off or disconnected. Responses are buffered and delivered when you reconnect.
 
 One-time tasks are automatically deleted after they execute. Recurring tasks continue running on schedule.

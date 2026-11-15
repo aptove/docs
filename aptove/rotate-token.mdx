@@ -11,7 +11,7 @@ Aptove Router issues one shared auth token to every device that pairs with it. R
 
 1. In the TUI, type `/rotate-token` and press **Enter**.
 2. A confirmation prompt appears. Press **Enter** to confirm, or **Esc** to cancel.
-3. Aptove Router generates a new token, saves it to `common.toml`, and restarts the bridge.
+3. Aptove Router generates a new token, saves it to `common.toml`, and restarts.
 4. All currently connected devices are disconnected. Any reconnect attempt using the old token receives **HTTP 401 Unauthorized**.
 5. The QR pairing screen opens automatically. Re-pair each device by scanning the new QR code.
 

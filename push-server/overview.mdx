@@ -13,6 +13,14 @@ Instead, the push server acts as a **credential vault**:
 - Each Aptove Router instance gets a short-lived JWT scoped to `push:write`; if it leaks, it expires in an hour and can't access any other resource
 - Aptove Router makes one simple HTTP call; the server handles all platform-specific push protocols
 
+## Hosted vs self-hosted
+
+<Note>
+**Using the Aptove hosted push service?** The Aptove-hosted relay (`push.aptove.com`) is pre-configured to deliver notifications to the official Aptove iOS app — set `push_selection = "aptove"` in `common.toml` and you are done. See [Deployment](/push-server/deploy) for setup.
+
+**Running your own relay?** A self-hosted relay needs its own APNs key tied to the same Apple Developer team and bundle ID as the iOS app you are running. If you are using the official Aptove iOS app (bundle ID `com.aptove.ios`), you do not have access to that Apple Developer account and cannot send APNs notifications to it. Self-hosting is only practical when you have a custom build of the iOS app under your own Apple Developer account with your own bundle ID.
+</Note>
+
 ## Architecture
 
 The push server is split into two Cloudflare Workers:

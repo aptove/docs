@@ -11,7 +11,7 @@ The `tailscale-serve` mode uses `tailscale serve` to proxy HTTPS on port 443 to 
 
 ## Prerequisites
 
-- **Tailscale v1.38+** installed on the machine running Aptove Router
+- **Tailscale v1.52+** installed on the machine running Aptove Router (`--bg` and `--set-path` flags required)
   - macOS: `brew install tailscale`
   - Linux: follow [tailscale.com/download](https://tailscale.com/download)
 - Machine enrolled in a tailnet: `tailscale up`
@@ -48,7 +48,7 @@ Transport mode is read from the project config directory — no extra flags need
 
 1. Aptove Router detects your MagicDNS hostname (e.g. `my-laptop.tail1234.ts.net`).
 2. A unique path prefix is derived from the instance's `agentId` (first 8 characters).
-3. `tailscale serve --https=443 /<prefix> http://localhost:<port>` registers a path-based route.
+3. `tailscale serve --bg --https=443 --set-path /<prefix> http://localhost:<port>` registers a path-based route in the background.
 4. The pairing URL uses `wss://my-laptop.tail1234.ts.net/<prefix>` — no certificate fingerprint needed because Tailscale provides a CA-signed certificate.
 5. When Aptove Router exits, only its own path route is removed — other instances are unaffected.
 
@@ -103,7 +103,7 @@ my-laptop.tail1234.ts.net
 Each instance:
 
 1. Derives a unique path prefix from the first 8 characters of its `agentId` (auto-generated UUID stored in `common.toml`).
-2. Registers its own route via `tailscale serve --https=443 /<prefix> http://localhost:<port>`.
+2. Registers its own route via `tailscale serve --bg --https=443 --set-path /<prefix> http://localhost:<port>`.
 3. Auto-resolves port conflicts — if `8766` is taken, it scans upward and picks the next free port.
 4. Cleans up only its own route on exit — other instances are unaffected.
 
@@ -135,7 +135,7 @@ Tailscale is a second dependency beyond Aptove Router itself. If the Tailscale d
 | `tailscale: not found on PATH` | Tailscale not installed | Install from [tailscale.com/download](https://tailscale.com/download) |
 | `Not enrolled in a Tailscale network` | Machine not connected | Run `tailscale up` |
 | `tailscale-serve mode requires MagicDNS + HTTPS` | MagicDNS or HTTPS not enabled on tailnet | Enable in [Tailscale admin console](https://login.tailscale.com/admin/dns) → DNS |
-| `tailscale serve requires Tailscale v1.38+` | Outdated Tailscale | Update Tailscale |
+| `tailscale serve requires Tailscale v1.52+` | Outdated Tailscale | Update Tailscale |
 | App cannot reach Aptove Router after pairing | Mobile not on the same tailnet | Open Tailscale app on the phone, ensure it's signed in and connected |
 | App stops connecting after Aptove Router upgrade | URL format changed (path prefix added) | Re-scan the QR code with `/qr` — the app updates the stored URL automatically |
 | 401 Unauthorized with two instances | Old root-path route still registered | Run `tailscale serve --https=443 / off` to clear the stale root route, then restart both instances |

@@ -172,9 +172,24 @@ Output:
 **Save `client_secret` now — it cannot be retrieved again.**
 
 ### 3. Add to Aptove Router config
-Add a `[push_relay]` section to `~/.aptove/projects/<your-project-path>/common.toml`:
+Add the following to `~/.aptove/projects/<your-project-path>/common.toml`.
+
+If you are using the **Aptove hosted push** service (`push.aptove.com`), set `push_selection = "aptove"` and configure `[aptove_push_relay]`:
 ```toml
-[push_relay]
+push_selection = "aptove"
+
+[aptove_push_relay]
+url           = "https://push.aptove.com"
+token_url     = "https://token.aptove.com"
+client_id     = "bridge-home"
+client_secret = "<secret from above>"
+```
+
+If you deployed your **own push relay**, set `push_selection = "custom"` and configure `[custom_push_relay]`:
+```toml
+push_selection = "custom"
+
+[custom_push_relay]
 url           = "https://<your-push-domain>"
 token_url     = "https://<your-token-domain>"
 client_id     = "bridge-home"

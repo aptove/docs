@@ -108,7 +108,7 @@ No relay_token is in any request body. The `client_secret` travels only to **cf-
 - Refreshes APNs JWT and FCM OAuth2 token via cron every 45 minutes
 
 ### 3. Aptove Router (this crate)
-- Reads `[push_relay]` config from `~/.aptove/projects/<your-project-path>/common.toml`
+- Reads push relay config (`push_selection` + `[aptove_push_relay]` or `[custom_push_relay]`) from `~/.aptove/projects/<your-project-path>/common.toml`
 - Fetches a JWT from cf-token on first push request; caches it until `<60s` remain
 - Intercepts `bridge/registerPushToken` WebSocket notifications from mobile apps
 - Forwards device token registration to cf-push-relay using its JWT
@@ -183,13 +183,27 @@ The mobile only needs the `pushRelayUrl` from the pairing response to know that 
 
 ## Aptove Router Configuration
 
-Push notifications are configured entirely via `~/.aptove/projects/<your-project-path>/common.toml`. All four fields are required; push is silently disabled if the section is absent or any field is empty.
+Push notifications are configured via `~/.aptove/projects/<your-project-path>/common.toml`. Set `push_selection` to `"aptove"` or `"custom"` and fill the matching credentials section. All four fields are required; push is silently disabled if the selection is absent or any field is empty.
 
 ```toml
-[push_relay]
+# Aptove hosted push
+push_selection = "aptove"
+
+[aptove_push_relay]
+url           = "https://push.aptove.com"
+token_url     = "https://token.aptove.com"
+client_id     = "bridge-home-office"        # provisioned via POST /clients on cf-token
+client_secret = "<secret shown once at creation>"
+```
+
+```toml
+# Self-hosted push relay
+push_selection = "custom"
+
+[custom_push_relay]
 url           = "https://<your-push-domain>"   # cf-push-relay base URL
 token_url     = "https://<your-token-domain>"  # cf-token base URL
-client_id     = "bridge-home-office"        # provisioned via POST /clients on cf-token
+client_id     = "bridge-home-office"
 client_secret = "<secret shown once at creation>"
 ```
 
@@ -350,7 +364,7 @@ aptove/core/src/
 
 1. Deploy cf-token and cf-push-relay (see their respective pages)
 2. Create an Aptove Router client via cf-token admin API
-3. Add `[push_relay]` section to `~/.aptove/projects/<your-project-path>/common.toml`
+3. Add push relay config (`push_selection` + `[aptove_push_relay]` or `[custom_push_relay]`) to `~/.aptove/projects/<your-project-path>/common.toml`
 4. Build and run Aptove Router — check logs for `Push relay: JWT auth (client_id=...)`
 
 ### Manual relay test with curl

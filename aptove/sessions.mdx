@@ -91,7 +91,11 @@ This ensures the agent process continues exactly where it left off, with full co
 
 ### Message Buffering
 
-When a client is disconnected, Aptove Router buffers any output the agent produces (up to `max_buffer_size` messages). When the client reconnects, buffered messages are replayed in order before live streaming resumes. This means no output is lost during brief disconnections.
+When a client is disconnected, Aptove Router buffers any output the agent produces (up to `max_buffer_size` messages). When the client reconnects, buffered messages are replayed in order before live streaming resumes.
+
+<Note>
+The buffer holds at most **10 000 messages** per agent. Output produced beyond that limit is dropped. For long-running autonomous tasks, reconnect before the buffer fills to avoid missing messages. Idle agents are also stopped after **30 minutes** — reconnecting after that starts a fresh session rather than resuming the existing one.
+</Note>
 
 ## Configuration
 
@@ -111,12 +115,13 @@ The following describes how the iOS Aptove app works with persistent sessions:
 
 ### First-Time Connection
 
-1. User scans QR code → app extracts host, port, auth token, and TLS fingerprint
-2. App stores the auth token in the iOS Keychain and agent metadata in CoreData
-3. App opens a WebSocket connection with the `X-Bridge-Token` header
-4. ACP SDK sends `initialize` → Aptove Router forwards to newly spawned agent
-5. ACP SDK sends `createSession` → agent creates a new session
-6. User begins chatting via `prompt` requests
+1. User scans QR code → app extracts the host, port, one-time pairing code, and TLS fingerprint
+2. App calls the pairing endpoint over the pinned TLS connection; Aptove Router returns the auth token and agent ID
+3. App stores the auth token in the iOS Keychain and agent metadata in CoreData
+4. App opens a WebSocket connection with the `X-Bridge-Token` header
+5. ACP SDK sends `initialize` → Aptove Router forwards to newly spawned agent
+6. ACP SDK sends `createSession` → agent creates a new session
+7. User begins chatting via `prompt` requests
 
 ### Reconnection After Disconnect
 

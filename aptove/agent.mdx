@@ -5,9 +5,30 @@ description: "How to configure an ACP-compatible AI agent for use with Aptove."
 
 ## What to enter
 
-When Aptove Router asks for an agent command, enter the shell command that starts your AI agent. The command must launch a process that speaks the [Agent Client Protocol](https://agentclientprotocol.com) over **stdio** (stdin / stdout).
+When Aptove Router asks for an agent command, enter the command that starts your AI agent. The command must launch a process that speaks the [Agent Client Protocol](https://agentclientprotocol.com) over **stdio** (stdin / stdout).
 
 Aptove Router will spawn this command as a subprocess and relay messages between it and the Aptove mobile app.
+
+### Command parsing rules
+
+The command is **not** run through a shell. Aptove Router splits it using POSIX-style word splitting (shlex), then spawns the program directly. This means:
+
+| Feature | Supported |
+|---------|-----------|
+| Single and double quotes (for arguments with spaces) | ✓ yes |
+| `~` home directory expansion | ✗ no — use the full path |
+| `$VARIABLE` environment variable expansion | ✗ no — expand variables in the value before saving |
+| Pipes (`\|`), `&&`, `;` chaining | ✗ no — only a single command |
+
+**Example with a quoted argument:**
+```
+my-agent --model "gpt-4o" --prompt "run in silent mode"
+```
+
+If the executable is not on `$PATH`, use the full absolute path:
+```
+/usr/local/bin/my-agent --acp
+```
 
 ---
 

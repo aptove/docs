@@ -3,7 +3,7 @@ title: "Agent Name"
 description: "How Aptove Router determines the agent's display name and how to rename it from iOS or common.toml."
 ---
 
-The agent name is the user-visible label shown in push notification titles and in the iOS app's agent list. This page explains where the name comes from, how to change it, and how the bridge and iOS stay in sync.
+The agent name is the user-visible label shown in push notification titles and in the iOS app's agent list. This page explains where the name comes from, how to change it, and how Aptove Router and iOS stay in sync.
 
 ---
 
@@ -45,7 +45,7 @@ The iOS app can rename the agent via **Agent Settings → Edit Name**. When the 
 2. The iOS app sends `bridge/setAgentName` to Aptove Router.
 3. Aptove Router updates its in-memory name (used for push notifications) and persists `agent_name` to `common.toml`.
 
-This means a name set on iOS survives a bridge restart — it is written to disk.
+This means a name set on iOS survives an Aptove Router restart — it is written to disk.
 
 ---
 
@@ -65,7 +65,7 @@ On every connection, before any ACP messages are exchanged, Aptove Router sends 
 }
 ```
 
-iOS receives this and syncs the name to CoreData on every connect, so the app always reflects the bridge's current configured name.
+iOS receives this and syncs the name to CoreData on every connect, so the app always reflects Aptove Router's current configured name.
 
 ---
 
@@ -95,21 +95,21 @@ No response is sent — this is a one-way notification.
 
 ## Conflict resolution
 
-If the iOS app has a local rename that has not yet been synced to the bridge (e.g., the bridge was offline when the rename happened), the following logic applies on the next connection:
+If the iOS app has a local rename that has not yet been synced to Aptove Router (e.g., Aptove Router was offline when the rename happened), the following logic applies on the next connection:
 
-1. Bridge sends `bridge/identify` with its configured `agentName`.
+1. Aptove Router sends `bridge/identify` with its configured `agentName`.
 2. iOS compares it to the locally stored name.
-3. If they differ, iOS **wins** — it immediately sends `bridge/setAgentName` with the local name, updating the bridge and `common.toml`.
-4. If they are the same (or if iOS has no local name), the bridge's name is accepted as-is.
+3. If they differ, iOS **wins** — it immediately sends `bridge/setAgentName` with the local name, updating Aptove Router and `common.toml`.
+4. If they are the same (or if iOS has no local name), Aptove Router's name is accepted as-is.
 
-This ensures that an iOS-initiated rename always propagates to the bridge, even after a period of being offline.
+This ensures that an iOS-initiated rename always propagates to Aptove Router, even after a period of being offline.
 
 ---
 
 ## Multiple devices
 
-When multiple iOS devices are connected to the same bridge:
+When multiple iOS devices are connected to the same Aptove Router instance:
 
 - All devices receive `agentName` via `bridge/identify` on connect and sync to CoreData.
-- If one device renames the agent, it sends `bridge/setAgentName` → bridge persists the new name → the other devices will see the new name on their next connection.
+- If one device renames the agent, it sends `bridge/setAgentName` → Aptove Router persists the new name → the other devices will see the new name on their next connection.
 - Real-time broadcast to already-connected devices is not implemented; they see the new name on reconnect.
