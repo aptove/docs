@@ -137,12 +137,12 @@ Aptove Router Instance A (client_id: bridge-alice) Aptove Router Instance B (cli
   └─ Sends push  → looks up devices:bridge-alice  └─ Sends push  → looks up devices:bridge-bob
 
 KV Store (cf-push-relay):
-┌───────────────────┬────────────────────────────────────────────────┐
-│  Key              │  Value                                         │
-├───────────────────┼────────────────────────────────────────────────┤
+┌──────────────────────┬─────────────────────────────────────────────┐
+│  Key                 │  Value                                      │
+├──────────────────────┼─────────────────────────────────────────────┤
 │ devices:bridge-alice │ [{platform:"ios", token:"aaa..."}, ...]     │
 │ devices:bridge-bob   │ [{platform:"android", token:"bbb..."}, ...] │
-└───────────────────┴────────────────────────────────────────────────┘
+└──────────────────────┴─────────────────────────────────────────────┘
 ```
 
 Instance A cannot send to Instance B's devices — the JWT signature cannot be forged.
