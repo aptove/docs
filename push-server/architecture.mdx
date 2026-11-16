@@ -9,8 +9,8 @@ Aptove Router implements a secure push notification system that enables mobile a
 
 ```
 ┌──────────────────┐         ┌──────────────────┐        ┌─────────────────────┐
-│   Mobile App     │         │   Aptove Router     │        │   cf-token Worker   │
-│  (iOS/Android)   │         │  (Your Machine)  │        │  <your-token-domain>   │
+│   Mobile App     │         │   Aptove Router  │        │   cf-token Worker   │
+│  (iOS/Android)   │         │  (Your Machine)  │        │  <your-token-domain>│
 └──────────────────┘         └──────────────────┘        └─────────────────────┘
          │                            │                             │
          │  1. Scan QR Code           │                             │
@@ -140,7 +140,7 @@ KV Store (cf-push-relay):
 ┌───────────────────┬────────────────────────────────────────────────┐
 │  Key              │  Value                                         │
 ├───────────────────┼────────────────────────────────────────────────┤
-│ devices:bridge-alice │ [{platform:"ios", token:"aaa..."}, ...]    │
+│ devices:bridge-alice │ [{platform:"ios", token:"aaa..."}, ...]     │
 │ devices:bridge-bob   │ [{platform:"android", token:"bbb..."}, ...] │
 └───────────────────┴────────────────────────────────────────────────┘
 ```
@@ -181,23 +181,23 @@ The mobile only needs the `pushRelayUrl` from the pairing response to know that 
 ### Credential boundaries
 
 ```
-┌───────────────────────────────────────────────────────────────────────-──┐
+┌──────────────────────────────────────────────────────────────────────────┐
 │                   What each party holds                                  │
-├──────────────────┬────────────────────────────────────────────────────-──┤
+├──────────────────┬───────────────────────────────────────────────────────┤
 │ Mobile app       │ APNs/FCM device token (from OS)                       │
 │                  │ pushRelayUrl (from QR pairing)                        │
-├──────────────────┼──────────────────────────────────────────────────-────┤
-│ Aptove Router       │ client_id + client_secret (from common.toml)          │
+├──────────────────┼───────────────────────────────────────────────────────┤
+│ Aptove Router    │ client_id + client_secret (from common.toml)          │
 │                  │ Cached RS256 JWT (1h TTL, fetched from cf-token)      │
-├──────────────────┼──────────────────────────────────────────────────-────┤
+├──────────────────┼───────────────────────────────────────────────────────┤
 │ cf-token         │ RSA-2048 private key (Cloudflare Secret)              │
 │                  │ Admin credentials (Cloudflare Secret + vars)          │
 │                  │ Hashed client secrets (KV, PBKDF2-SHA256)             │
-├──────────────────┼────────────────────────────────────────────────────-──┤
+├──────────────────┼───────────────────────────────────────────────────────┤
 │ cf-push-relay    │ APNs private key, Key ID, Team ID (Cloudflare Secrets)│
 │                  │ FCM private key, client email (Cloudflare Secrets)    │
 │                  │ JWKS cache + device token mappings (KV)               │
-└──────────────────┴────────────────────────────────────────────────────-──┘
+└──────────────────┴───────────────────────────────────────────────────────┘
 ```
 
 ## Aptove Router Configuration

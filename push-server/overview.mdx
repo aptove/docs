@@ -39,14 +39,14 @@ The push server is split into two Cloudflare Workers:
 ```
 Aptove Router            cf-token              cf-push-relay          Apple / Google
   │                       │                       │                      │
-  │── POST /token ────────►│                       │                      │
+  │── POST /token ───────►│                       │                      │
   │◄─ { access_token } ───│                       │                      │
   │                       │                       │                      │
-  │── POST /register ─────────────────────────────►│                      │
-  │◄─ { ok: true } ──────────────────────────────-│                      │
+  │── POST /register ────────────────────────────►│                      │
+  │◄─ { ok: true } ───────────────────────────────│                      │
   │                       │                       │                      │
-  │── POST /push ──────────────────────────────────►│                      │
-  │                       │                       │── POST (APNs/FCM) ───►│
+  │── POST /push ────────────────────────────────►│                      │
+  │                       │                       │── POST (APNs/FCM) ──►│
   │◄─ { ok: true } ───────────────────────────────│◄─ 200 OK ────────────│
 ```
 

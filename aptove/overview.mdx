@@ -15,12 +15,12 @@ Aptove Router is a small, self-contained binary that runs on any machine where y
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                     aptove                       │
-│                                                  │
-│   WebSocket server ◄──── Transport layer         │
-│          │                (local / Tailscale)    │
-│          ▼                                       │
-│     Agent process (stdio ACP)                    │
+│                     aptove                      │
+│                                                 │
+│   WebSocket server ◄──── Transport layer        │
+│          │                (local / Tailscale)   │
+│          ▼                                      │
+│     Agent process (stdio ACP)                   │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -51,7 +51,16 @@ After setup, Aptove Router starts and immediately shows a QR code for pairing yo
 
 ## Running from a folder
 
-Aptove Router is folder-aware. Every time you run `aptove` it derives a config directory from the current working directory, stored under `~/.aptove/projects/`. Each project folder gets its own isolated config — credentials and certificates never land inside the project itself.
+Aptove Router is folder-aware. Every time you run `aptove` it derives a config directory from the current working directory, stored under `~/.aptove/projects/`.
+
+The agent subprocess is also spawned with its working directory set to the folder where you launched `aptove`. This means the agent can read and write files relative to that path, and tools like Claude Code or Copilot CLI will use it as the project root. Run `aptove` from the directory you want the agent to work on:
+
+```bash
+cd ~/projects/my-app
+aptove
+```
+
+Each project folder gets its own isolated config stored under `~/.aptove/projects/` — credentials and certificates never land inside the project itself:
 
 ```
 ~/.aptove/projects/

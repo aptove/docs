@@ -20,7 +20,7 @@ The local transport enables secure connections between client apps (iOS, Android
 
 ```
 ┌─────────────────┐      Local Network       ┌─────────────────┐
-│   Mobile App    │◄────────TLS/WSS─────────►│   Aptove Router    │
+│   Mobile App    │◄────────TLS/WSS─────────►│   Aptove Router │
 │  (iOS/Android)  │                          │  (Your Machine) │
 └─────────────────┘                          └─────────────────┘
         │                                            │
@@ -310,14 +310,14 @@ port    = 8765   # unique per folder
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                         Bridge                              │
-│  ┌─────────────┐  ┌──────────────┐  ┌───────────────────┐  │
-│  │   TLS       │  │   Pairing    │  │    WebSocket      │  │
-│  │   Server    │──│   Manager    │──│    Handler        │  │
-│  │             │  │              │  │                   │  │
-│  │ Self-signed │  │ - Code gen   │  │ - Auth validation │  │
-│  │ certificate │  │ - Validation │  │ - Message routing │  │
-│  │             │  │ - Rate limit │  │ - Agent stdio     │  │
-│  └─────────────┘  └──────────────┘  └───────────────────┘  │
+│  ┌─────────────┐  ┌──────────────┐  ┌───────────────────┐   │
+│  │   TLS       │  │   Pairing    │  │    WebSocket      │   │
+│  │   Server    │──│   Manager    │──│    Handler        │   │
+│  │             │  │              │  │                   │   │
+│  │ Self-signed │  │ - Code gen   │  │ - Auth validation │   │
+│  │ certificate │  │ - Validation │  │ - Message routing │   │
+│  │             │  │ - Rate limit │  │ - Agent stdio     │   │
+│  └─────────────┘  └──────────────┘  └───────────────────┘   │
 │         │                │                    │             │
 │         └────────────────┴────────────────────┘             │
 │                          │                                  │

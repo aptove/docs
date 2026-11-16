@@ -32,6 +32,25 @@ If the executable is not on `$PATH`, use the full absolute path:
 
 ---
 
+## Working directory
+
+Aptove Router spawns the agent process with its working directory set to **the directory where `aptove` was launched**. The agent inherits that directory as its `cwd`.
+
+This matters for agents that use the working directory as project context (such as Claude Code or GitHub Copilot CLI). Run `aptove` from the root of the project you want the agent to work on:
+
+```bash
+cd ~/projects/my-app
+aptove
+```
+
+The agent will then treat `~/projects/my-app` as its working directory, so file edits, searches, and shell commands will be relative to that path.
+
+<Note>
+If you move or rename the directory after Aptove Router starts, the agent's working directory does not update automatically. Restart `aptove` from the new location.
+</Note>
+
+---
+
 ## Available agents
 
 ### GitHub Copilot
