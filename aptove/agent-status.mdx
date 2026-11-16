@@ -1,0 +1,74 @@
+---
+title: "Agent Connection States"
+description: "Understanding the three connection states shown in the Aptove mobile app."
+---
+
+The mobile app tracks the connection in two independent layers — the **transport** (the WebSocket from your phone to Aptove Router) and the **AI agent** (the process Aptove Router spawns to handle your messages). These can fail independently, so the app displays them separately.
+
+---
+
+## The three states
+
+### State 1 — Fully connected (green dot)
+
+Both layers are working:
+
+- **Transport** — WebSocket connected to Aptove Router
+- **AI agent** — the AI process (e.g. `claude-code-acp`, `copilot --acp`) is running
+
+The agent name in the list shows a solid green dot.
+
+### State 2 — AI agent offline (orange warning triangle)
+
+The transport is reachable but the AI process failed to start:
+
+- **Transport** — WebSocket connected to Aptove Router ✓
+- **AI agent** — spawn failed (bad command, missing executable, etc.) ✗
+
+The agent name in the list shows an **orange warning triangle** and the subtitle reads *"AI agent offline"*.
+
+Tap the agent → **Configure** to see the exact error message under the "Connection" section.
+
+**How to fix:** Use the `/agent` slash command in Aptove Router to update the command to a working value, or edit `common.toml` and restart. The app will automatically clear the warning the next time the AI process starts successfully.
+
+### State 3 — Transport disconnected (gray dot)
+
+Aptove Router is unreachable from the mobile device:
+
+- **Transport** — WebSocket closed or unreachable
+- **AI agent** — unknown (can't reach the bridge)
+
+The agent name shows a solid gray dot. The app retries automatically (starting at 30-second intervals with exponential backoff).
+
+Connection status updates in real time — the app detects when Aptove Router stops within about one second.
+
+---
+
+## Color guide
+
+| Indicator | Meaning |
+|-----------|---------|
+| Solid green dot | Transport + AI agent both connected |
+| Orange warning triangle | Transport connected, AI agent offline |
+| Solid gray dot | Transport disconnected |
+| Pulsing orange dot | Transport reconnecting |
+| Orange triangle (auth) | Agent session expired — requires re-authentication |
+
+---
+
+## Connection detail view
+
+Tap any agent → **Configure** (long-press or the button in the agent view) to see the full breakdown:
+
+- **Transport** row — shows the connection method (Local, Tailscale, Cloudflare) and its status
+- **AI Agent** row — shows whether the agent process is running; if offline, displays the spawn error message
+
+This view is the fastest way to diagnose which layer is failing.
+
+---
+
+## Related
+
+- [Agent Setup](/aptove/agent) — configure the AI agent command
+- [Setup Wizard](/aptove/setup-wizard) — first-run wizard walkthrough
+- [Connection States (mobile app)](/mobile-app/connection-states) — the same states from the mobile app perspective

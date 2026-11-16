@@ -1,0 +1,70 @@
+---
+title: "Connection States"
+description: "Understanding the status indicators shown next to each agent in the Aptove mobile app."
+---
+
+Each agent in the Aptove app shows a small indicator that tells you what is and is not working. The connection has two independent layers: the **transport** (the network path from your phone to Aptove Router) and the **AI agent** (the process running on your computer that handles your requests).
+
+---
+
+## Status indicators
+
+### Green dot — Fully connected
+
+Both layers are working. You can send messages.
+
+- Transport: connected
+- AI agent: running
+
+### Orange warning triangle — AI agent offline
+
+Your phone can reach Aptove Router, but Aptove Router failed to start the AI agent process. This usually means the agent command was misconfigured (wrong executable name, missing flags, or the tool is not installed on the computer).
+
+- Transport: connected ✓
+- AI agent: failed to start ✗
+
+**What to do:** Open the agent → tap **Configure** (long-press the agent row or use the button in the agent view). The **Connection** section shows:
+- A green dot next to **Transport** confirming the network is working
+- An orange dot next to **AI Agent** with the exact error from Aptove Router
+
+Bring up Aptove Router on your computer and use `/agent` to enter the correct command. The warning clears automatically on the next successful connection.
+
+### Gray dot — Transport disconnected
+
+Your phone cannot reach Aptove Router at all.
+
+- Transport: disconnected
+- AI agent: unknown
+
+The app retries automatically. Check that Aptove Router is running on your computer and that both devices are on the same network (for Local transport) or VPN (for Tailscale transport).
+
+### Pulsing orange dot — Reconnecting
+
+The app is actively trying to reconnect after an unexpected disconnect.
+
+---
+
+## Connection detail
+
+Tap any agent and open **Configure** to see the full two-row breakdown:
+
+| Row | Shows |
+|-----|-------|
+| **Transport** | Network path status — "Connected via Local / Tailscale / Cloudflare" or "Disconnected" |
+| **AI Agent** | Process status — "Running", "Offline", or error message |
+
+If the AI agent row shows an error, the error text is the exact message Aptove Router sent when it failed to spawn the process — copy it into a web search or check the [troubleshooting table](/aptove/agent#troubleshooting) for common fixes.
+
+---
+
+## Pairing with an invalid agent command
+
+If you pair with the Aptove app while the agent command is misconfigured, pairing still succeeds. The agent appears in the list immediately with the orange warning triangle rather than failing the scan entirely. This lets you fix the command on the computer without needing to scan the QR code again.
+
+---
+
+## Related
+
+- [Agent Connection States](/aptove/agent-status) — the same states from the Aptove Router side
+- [Setup Wizard](/aptove/setup-wizard) — first-run wizard and what to expect after pairing
+- [Agent Setup](/aptove/agent) — configure the AI agent command on the computer

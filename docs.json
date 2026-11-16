@@ -41,7 +41,9 @@
             "pages": [
               "aptove/overview",
               "aptove/install",
+              "aptove/setup-wizard",
               "aptove/agent",
+              "aptove/agent-status",
               "aptove/configuration",
               {
                 "group": "Transports",
@@ -81,6 +83,7 @@
             "pages": [
               "mobile-app/overview",
               "mobile-app/pairing",
+              "mobile-app/connection-states",
               "mobile-app/features",
               "mobile-app/permissions",
               "mobile-app/voice-input",

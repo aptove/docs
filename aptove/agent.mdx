@@ -192,4 +192,5 @@ Agents that do not implement the `auth/status` ACP capability are unaffected —
 | Agent starts but Aptove Router shows no clients | Agent is not in ACP mode — add the required flag (e.g. `--acp`) |
 | Agent exits immediately | Run the command manually in a terminal to see the error output |
 | `ERROR 🔐 Agent returned authentication error` (Claude) | Claude Code session expired — run `claude` → `/login`, then use `/agent` in Aptove to reload |
-| Orange warning badge / banner in the mobile app | Agent session expired — re-authenticate on the computer and reconnect from the mobile app |
+| Orange warning badge / banner in the mobile app (auth) | Agent session expired — re-authenticate on the computer and reconnect from the mobile app |
+| Orange warning badge in the mobile app — "AI agent offline" | The command was saved but the executable failed to spawn. Use `/agent` in Aptove Router to correct the command. See [Agent Connection States](/mobile-app/connection-states) for the full state model. |
