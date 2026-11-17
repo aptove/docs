@@ -1,0 +1,34 @@
+---
+title: "Aptove Push Service"
+description: "Real-time push notifications for the Aptove mobile app — hosted, zero-infrastructure."
+---
+
+## What is the Aptove Push Service?
+
+The Aptove Push Service is a hosted push relay operated by Aptove. When your phone is not connected to Aptove Router, the push service delivers a notification so you know a response is waiting.
+
+Without push notifications, messages are buffered locally on your machine and delivered the next time the Aptove app opens and reconnects. Push notifications make the experience feel real-time even when the app is in the background.
+
+## Getting credentials
+
+Register at **[dash.aptove.com](https://dash.aptove.com)** to get a Client ID and Client Secret for your Aptove Router instance. Each instance gets its own credentials — notifications are scoped to your devices only.
+
+## How it works
+
+1. Aptove Router uses your Client ID and Client Secret to fetch a short-lived JWT from the Aptove token service.
+2. When your phone connects and pairs, it registers its device token with the push relay using that JWT.
+3. When the AI agent produces a response and no phone is connected, Aptove Router sends a push notification via the relay, which forwards it to APNs (iOS) or FCM (Android).
+
+## Setup in Aptove Router
+
+During first-run setup, select **Aptove Push Service** in the push notifications wizard step and enter your Client ID and Client Secret from [dash.aptove.com](https://dash.aptove.com).
+
+To configure push on a running instance, use the `/push` command in the Aptove Router TUI.
+
+## Privacy
+
+Device tokens are stored on Cloudflare infrastructure and scoped to your Client ID. Aptove does not store message content — only a generic "new message" notification payload is sent to the device.
+
+## Self-hosting
+
+If you need to run your own push relay (for example, because you are distributing a custom build of the Aptove mobile app under your own Apple Developer account), see the [Push Server](/push-server/overview) documentation.

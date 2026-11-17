@@ -34,9 +34,21 @@ Select how the mobile app connects to Aptove Router:
 
 Each transport requires its own configuration. For Local, no extra config is needed. For Tailscale, you need Tailscale running on both devices. For Cloudflare, you need a Cloudflare Access service token.
 
-### Step 3 — QR code
+### Step 3 — Push notifications
 
-After the wizard finishes, Aptove Router starts and immediately shows the QR pairing code. Open the Aptove app on your phone, tap **Add agent**, and scan the code.
+Choose how the mobile app receives notifications when it is not connected:
+
+| Option | Description |
+|--------|-------------|
+| **No Push** | Messages are buffered locally and delivered when the app reconnects. No push notifications sent. |
+| **Aptove Push Service** | Recommended. Aptove hosts the push relay. Requires a Client ID and Client Secret from [dash.aptove.com](https://dash.aptove.com). |
+| **Self Managed** | You run your own push relay. Requires token service URL, push service URL, Client ID, and Client Secret. |
+
+You can skip this step by pressing **Esc** — push will default to "No Push" and you can configure it later with `/push`.
+
+### Step 4 — QR code
+
+Aptove Router starts automatically and the QR pairing code appears as the last wizard step. Open the Aptove app on your phone, tap **Add agent**, and scan the code. Press **Enter** to continue to the running screen at any time.
 
 ---
 
@@ -60,12 +72,18 @@ The app will reconnect and the warning will clear automatically once the agent p
 
 ## Re-running the wizard
 
-The wizard re-runs automatically when required config is missing. You can also trigger individual wizard steps while Aptove Router is running:
+The wizard re-runs automatically when required config is missing. You can also trigger individual settings screens while Aptove Router is running:
 
-| Slash command | Opens wizard step for |
-|---------------|-----------------------|
+| Slash command | Opens settings for |
+|---------------|-------------------|
 | `/agent` | AI agent command |
 | `/transport` | Transport selection |
+| `/push` | Push notification settings |
+| `/keep-alive` | Toggle to prevent the computer to sleep |
+
+<Tip>
+Any of these settings can be changed later — you do not need to restart from scratch.
+</Tip>
 
 ---
 

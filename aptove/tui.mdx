@@ -17,8 +17,10 @@ On first run (or when required configuration is missing), the wizard runs before
 |------|---------------|
 | Agent select | `agent_command` is not set |
 | Transport pick | No transports are enabled, or 2+ are enabled |
+| Push notifications | `push_selection` is not set |
+| QR code | Always — final step of first-run setup |
 
-The wizard writes your choices to `common.toml` and then starts Aptove Router automatically. After the wizard, the QR pairing code is shown immediately.
+The wizard writes your choices to `common.toml` and starts Aptove Router automatically. The QR pairing code is shown as the last wizard step — scan it with the Aptove app to pair immediately.
 
 For a full walkthrough of each wizard step, what happens if the agent command is wrong, and how the mobile app shows the result, see [Setup Wizard](/aptove/setup-wizard).
 
@@ -39,6 +41,7 @@ Type these in the input bar while Aptove Router is running:
 | `/qr` | Show QR pairing code for the mobile app |
 | `/agent` | Change the AI agent |
 | `/transport` | Change the transport |
+| `/push` | Configure push notifications |
 | `/keep-alive` | Toggle to prevent the computer to sleep |
 | `/log-level` | Change log verbosity (default: WARN) |
 | `/clear-logs` | Clear the log view |
@@ -55,7 +58,7 @@ Type these in the input bar while Aptove Router is running:
 
 ## Popups
 
-- **QR code** — displayed after `/qr` or automatically after the wizard completes. Scan with the Aptove app to pair.
+- **QR code** — displayed after `/qr`. Scan with the Aptove app to pair. (During first-run setup, the QR is shown as the last wizard step rather than a popup.)
 - **Help** — lists all TUI commands.
 
 <Tip>

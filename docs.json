@@ -91,6 +91,12 @@
             ]
           },
           {
+            "group": "Push Service",
+            "pages": [
+              "push-service/overview"
+            ]
+          },
+          {
             "group": "Push Notifications",
             "pages": [
               "push-server/overview",
