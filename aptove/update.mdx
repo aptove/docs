@@ -1,0 +1,65 @@
+---
+title: "Updating Aptove"
+description: "How Aptove notifies you of new versions and how to update with a single keypress."
+---
+
+## Overview
+
+When Aptove starts, it checks GitHub releases in the background. This check is non-blocking — the TUI is fully ready while it runs. If a newer version is found, you are notified without interrupting your workflow.
+
+## Update notification
+
+When a new version is available, the status bar at the bottom of the TUI shows a yellow indicator on the right:
+
+```
+↑ v1.4.1 [Ctrl+U]  [path ~/code]
+```
+
+A message is also added to the log panel:
+
+```
+Update available: v1.4.1 — press Ctrl+U to install.
+```
+
+If no update is found, or if the network is not reachable at startup, nothing is shown. Aptove never interrupts you to announce updates.
+
+## Checking for updates
+
+Press **Ctrl+U** at any time to check the update status.
+
+**If already on the latest version**, a popup appears confirming there is nothing to install. Press Esc or Enter to dismiss it.
+
+**If an update is available**, a confirmation popup appears:
+
+```
+ Update Available
+
+ v1.4.1 is ready to install.
+
+ The binary will be replaced in-place.
+ Your .aptove/ config is preserved.
+
+ ⏎  Install  ·  Esc  Cancel
+```
+
+Press **Enter** to begin the download, or **Esc** to cancel and return to the TUI.
+
+## Installing the update
+
+After confirming with Enter, progress messages appear in the log panel while the download runs. The TUI remains fully interactive during the download.
+
+When the update is complete you will see:
+
+```
+Updated to v1.4.1 — restart aptove to apply the update. Your .aptove/ config is preserved.
+```
+
+Restart Aptove to start running the new version.
+
+## What is preserved
+
+The update replaces only the `aptove` binary on disk. Everything in `.aptove/` — your configuration (`common.toml`), scheduled tasks, and logs — is left untouched. Your paired devices and agent settings carry over without any action on your part.
+
+## No rollback
+
+Aptove does not support in-app rollback to an older version. All releases are publicly available on the [GitHub Releases](https://github.com/aptove/aptove/releases) page — you can download and install any older version manually if needed.

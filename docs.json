@@ -55,6 +55,7 @@
               },
               "aptove/sessions",
               "aptove/slash-commands",
+              "aptove/update",
               "aptove/memory",
               "aptove/scheduled-tasks",
               "aptove/computer-files",
