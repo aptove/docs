@@ -58,10 +58,29 @@ Tap the **Starred** tab (★) in the bottom navigation bar to see all starred me
 
 Starred messages are stored on-device and persist across app restarts.
 
+## Biometric lock
+
+Protect the app with Face ID, Touch ID, or your device passcode. When enabled, the app locks every time it goes to the background and requires authentication before you can see any content.
+
+**Enabling:**
+
+Go to **Settings → Security → Biometric Lock** and toggle it on. The app immediately verifies that authentication works on your device — if you cancel or authentication fails, the toggle stays off.
+
+**Unlocking:**
+
+After the splash screen on cold launch, or whenever you return from the background, the system Face ID / Touch ID prompt appears automatically. If the prompt is dismissed, tap **Try Again** to retry. You can also fall back to your device passcode.
+
+**Disabling:**
+
+Toggle off **Biometric Lock** in Settings. The app will no longer lock on background.
+
+---
+
 ## Settings
 
 Access settings from the gear icon on the home screen:
 
+- **Security** — enable Biometric Lock (Face ID / Touch ID with passcode fallback)
 - **Appearance** — light / dark / system theme
 - **Agent configuration** — edit the name and icon for any paired agent
 - **Verbose Messages** — when enabled (default), the chat shows the agent's internal reasoning steps and tool output alongside normal responses. Turn it off for a cleaner view that shows only the final responses and permission prompts.
