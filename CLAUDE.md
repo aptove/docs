@@ -12,10 +12,6 @@ When you create a new `.mdx` file, **do not add it to the navigation automatical
 
 Wait for the user's answer before editing `docs.json`.
 
-### Exceptions
-
-- `aptove/cloudflare-transport.mdx` is intentionally excluded from navigation. Do not add it.
-
 ### Navigation file structure (`docs.json`)
 
 ```
