@@ -155,9 +155,9 @@ Every push notification sent by Aptove Router includes the following fields. The
 
 | Field | Value | Sent to | Notes |
 |-------|-------|---------|-------|
-| `title` | `"Aptove"` (default) or the agent name | cf-push-relay → APNs / FCM | Shown in the notification banner. Defaults to `"Aptove"` to avoid leaking the agent name (which is derived from the working-directory folder name). Set `push_generic_title = false` in `common.toml` to use the real name instead. |
+| `title` | The value of `agent_name`, or `"Aptove"` when `push_generic_title = true` | cf-push-relay → APNs / FCM | Shown in the notification banner. By default (`push_generic_title = false`) the title is the agent name (editable in `common.toml`). Set `push_generic_title = true` to send `"Aptove"` instead. |
 | `body` | `"Your agent has new activity"` | cf-push-relay → APNs / FCM | Fixed string — agent response content is never included. |
-| `data.agentName` | The agent name | cf-push-relay → APNs / FCM → iOS | Included in the notification data payload (not the visible banner) so the iOS app knows which agent to open when the user taps the notification. Even with `push_generic_title = true` this field still contains the real agent name. |
+| `data.agentName` | The agent name | cf-push-relay → APNs / FCM → iOS | Included only when `push_generic_title = false`. When set to `true`, this field is omitted from the payload entirely so the agent name never reaches the relay or APNs / FCM. |
 
 Additionally, Aptove Router sends the following to cf-push-relay when registering a device:
 
