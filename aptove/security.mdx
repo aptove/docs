@@ -139,7 +139,7 @@ After 5 failed verification attempts **from the same IP address** the current co
 
 **Reverse-proxy support:** When Aptove Router sits behind a local reverse proxy (e.g. nginx on localhost), the `X-Forwarded-For` or `X-Real-IP` header is used as the effective client IP, so each upstream device gets its own counter. Forwarding headers are only trusted when the TCP connection arrives from a loopback address (`127.0.0.1` / `::1`).
 
-**Tailscale limitation:** `tailscale serve` does not inject `X-Forwarded-For`. All tailnet peers connect through `127.0.0.1` with no forwarding header, so the 5-attempt counter is shared across the entire tailnet rather than per-device. If a misconfigured or misbehaving device on your tailnet exhausts the limit, use `/qr` in the Aptove Router TUI to generate a fresh code and reset all counters immediately — no restart needed.
+**Tailscale:** `tailscale serve` injects `X-Forwarded-For` via its local proxy. Aptove Router trusts forwarding headers from loopback connections, so each tailnet device gets its own independent 5-attempt counter. If any device exhausts its limit, use `/qr` in the Aptove Router TUI to generate a fresh code and reset all counters immediately — no restart needed.
 
 ---
 
