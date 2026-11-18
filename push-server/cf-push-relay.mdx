@@ -167,6 +167,7 @@ Every protected endpoint has two layers of rate limiting:
 |----------|----------------------------|------------------------|--------------------|--------------:|
 | `POST /push` | 1 req/min per `client_id` | 20 | 1 token per 12 min | 5/hr |
 | `POST /register` | 1 req/min per `client_id` | 5 | 1 token per 1 hr | 1/hr |
+| `DELETE /register` | 1 req/min per `client_id` (shared with POST) | — | — | 1/min |
 | `GET /health` | 1 req/min per IP | — | — | 1/min |
 
 Authenticated endpoints (`/push`, `/register`) are keyed on the JWT `sub` claim (bridge `client_id`). The public `/health` endpoint is keyed on the client IP via `cf-connecting-ip`.
