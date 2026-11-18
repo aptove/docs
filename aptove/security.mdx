@@ -116,6 +116,10 @@ See [Persistent Memory](/aptove/memory) for details on how to clear or increase 
 
 ## 3. Webhook URL token length
 
+<Note>
+Webhook forwarding is an **enterprise feature**. Without the enterprise plugin registered, every request to the webhook endpoint returns `503 Service Unavailable` (`{"error":"webhooks_not_configured"}`). The limits below apply within an enterprise deployment.
+</Note>
+
 **Protects against:** oversized URL tokens causing log bloat or buffering overhead in the HTTP handler.
 
 | Limit | Value | Configurable |
