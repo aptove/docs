@@ -98,7 +98,7 @@ Unlike a plain HTTP file endpoint, using the WebSocket channel means the Cloudfl
 
 ### Hidden files
 
-Files and directories whose names begin with `.` (dotfiles) are excluded from directory listings. This prevents accidental exposure of `.env`, `.git`, `.ssh`, and similar sensitive paths.
+Files and directories whose names begin with `.` (dotfiles) are excluded from directory listings **and** cannot be accessed via `bridge/files/content`. Requesting `.env`, `.git/config`, or any other dotfile or file inside a dot-directory returns a `forbidden` error. This prevents accidental exposure of `.env`, `.git`, `.ssh`, and similar sensitive paths.
 
 ---
 
