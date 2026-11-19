@@ -1,0 +1,36 @@
+---
+title: "Security"
+description: "How the Aptove app protects your credentials and connections."
+---
+
+## Credential storage
+
+Connection credentials (WebSocket URL, auth token, certificate fingerprint) are stored in the
+**iOS Keychain** with the `kSecAttrAccessibleWhenUnlockedThisDeviceOnly` protection class. This
+means credentials are encrypted at rest, tied to your device, and never backed up to iCloud or
+transferred to another device.
+
+## Certificate pinning
+
+For **Local** and **Tailscale-IP** transports, Aptove Router uses a self-signed TLS certificate.
+When you pair, the QR code includes the SHA-256 fingerprint of that certificate. The app stores
+the fingerprint and validates it on every subsequent connection — if the certificate doesn't
+match exactly, the connection is refused.
+
+This prevents a machine-in-the-middle from intercepting your traffic even on a local network.
+
+For **Tailscale-Serve** transport, Aptove Router exposes a Let's Encrypt certificate through
+the Tailscale HTTPS layer. The app uses standard Apple TLS validation in that case; certificate
+pinning is not applied.
+
+## Secure pairing
+
+Pairing uses a one-time 6-digit code that:
+
+- **Expires in 60 seconds** — enforced by Aptove Router; a code that times out cannot be reused
+- **Is rate-limited** — the pairing endpoint rejects too many failed attempts
+- **Delivers credentials over pinned TLS** — the WebSocket auth token is never transmitted in
+  the QR code itself; it is returned by Aptove Router only after the code is validated
+
+After a successful pairing the code is consumed and cannot be used again. Scan the QR code in
+the Aptove Router TUI to generate a fresh code.

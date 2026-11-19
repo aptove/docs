@@ -85,6 +85,8 @@
               "mobile-app/overview",
               "mobile-app/pairing",
               "mobile-app/connection-states",
+              "mobile-app/security",
+              "mobile-app/sessions",
               "mobile-app/features",
               "mobile-app/permissions",
               "mobile-app/voice-input",

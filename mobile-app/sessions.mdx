@@ -1,0 +1,49 @@
+---
+title: "Sessions"
+description: "How the Aptove app preserves and resumes your conversation sessions."
+---
+
+## How session resumption works
+
+When you connect to an agent, Aptove Router creates an ACP session and returns a session ID.
+The app stores that session ID locally so it can resume the same conversation the next time you
+connect.
+
+On reconnect:
+
+1. The app checks whether the agent supports `loadSession` (stored from the previous connection).
+2. If supported, it passes the existing session ID to the connection request.
+3. Aptove Router loads the session and the conversation continues where it left off.
+4. If loading fails — for example because the session expired or the agent was restarted — the
+   app falls back to a new session automatically. No action is needed from you.
+
+## Session status indicators
+
+When you open a chat, a brief indicator appears in the header for a few seconds to tell you
+whether the conversation was resumed or started fresh:
+
+| Indicator | Meaning |
+|-----------|---------|
+| **Session resumed** (blue) | The existing session was loaded; your previous conversation history is intact |
+| **New session** (gray) | A fresh session was started; prior context is not available |
+
+The indicator disappears on its own after a few seconds.
+
+## Agent configuration screen
+
+Tap the **agent name** at the top of the chat view to open the agent configuration screen. From
+there you can:
+
+- View agent information (name, URL, capabilities)
+- View the current connection status — separate rows for the transport layer and the AI agent process
+- **Clear Session** — discards the stored session ID and starts a fresh conversation on next connect
+- **Delete Agent** — removes the agent and all associated data from the app
+
+## Re-scanning a QR code
+
+If you scan a QR code for an agent that is already paired, the app updates the stored
+credentials (auth token, certificate fingerprint) and clears the cached session. The agent
+stays in your list; you do not need to re-add it.
+
+This is useful when Aptove Router restarts and generates new credentials — scan the new QR
+code once and the connection is refreshed automatically.
