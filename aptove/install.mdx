@@ -49,6 +49,16 @@ On Windows (PowerShell):
 powershell -ExecutionPolicy ByPass -c "irm https://github.com/aptove/aptove/releases/latest/download/aptove-installer.ps1 | iex"
 ```
 
+## Install from crates.io
+
+If you already have a [Rust toolchain](https://rustup.rs) installed, you can install the latest published release directly from [crates.io](https://crates.io/crates/aptove):
+
+```bash
+cargo install aptove
+```
+
+This compiles from the published source and places the binary in `~/.cargo/bin/`. No cloning required.
+
 ## Build from source
 
 If you have a [Rust toolchain](https://rustup.rs) installed:
@@ -69,4 +79,5 @@ Use this if you want to build a specific commit or develop against the Aptove Ro
 | Verified install | curl, shasum | Security-conscious / production |
 | gh attestation verify | GitHub CLI | Strongest provenance check |
 | Quick install (shell script) | Nothing extra | Fast local setup |
+| cargo install | Rust toolchain | Rust users who want a one-liner |
 | Build from source | Rust toolchain + git | Contributors / custom builds |
